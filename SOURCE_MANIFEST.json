@@ -7,8 +7,8 @@
   "applicationVersion": "0.1.0-alpha.1",
   "repositoryUrl": "https://github.com/hhhzingy/ProjectOrch",
   "maintainer": "hhhzingy",
-  "upstreamSourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98",
-  "sourceTreeSha256": "a73e12fe3b21bf818c319f4020f14b14f9f7f7802b30cee8a5ffe99ba22c0ec0",
+  "upstreamSourceSha256": "1764766729267483da14faa8fec6634689c8b94cbc920a8fee66924e1e72f75f",
+  "sourceTreeSha256": "889fff8c715bc08d3f3a8407989fb4c001324c5ba037b201aa5c7e7cb9274d62",
   "excluded": {
     "tests/storage/adapter-integration.test.mjs": "官方原生/开发机路径测试，不运行且不带用户路径",
     "tests/storage/harness-adapters.test.mjs": "官方原生/开发机路径测试",
@@ -59,7 +59,7 @@
     {
       "path": "PUBLIC_EXPORT_POLICY.json",
       "size": 24657,
-      "sha256": "b5e0ee2058f5c7b3dc4913f307fe735234c024f4b8fd165d565453f06da2341b",
+      "sha256": "3ed94344e04de7656a53ece696f374a1672ea21271af85c63e559392d6fd9348",
       "origin": "public-export-policy-git-byte-preservation"
     },
     {
@@ -1798,9 +1798,9 @@
     },
     {
       "path": "tests/adapters/temporary-directory.mjs",
-      "size": 1378,
-      "sha256": "9f68f8e8142d28afd152929ceac8c3e30cb66179ef8e0267faa64b9afe70fd6b",
-      "origin": "reviewed-source"
+      "size": 1525,
+      "sha256": "4d3e72423e66190ee620a048ffd2256e8fc3c0362ddbedbb5d9fd4d7a8bbfda5",
+      "origin": "reviewable-ci-test-path-and-cleanup-fix"
     },
     {
       "path": "tests/adapters/user-review-panel.test.mjs",
@@ -1918,9 +1918,9 @@
     },
     {
       "path": "tests/recovery/fault-injection.test.mjs",
-      "size": 8377,
-      "sha256": "ba9c461ac2b8155eca621b4890454b73957d28cad1cdc58f9c252fcd86702377",
-      "origin": "reviewed-source"
+      "size": 8479,
+      "sha256": "f6f8d4ac3a4862b57d79e0bfdd86b77ffe1312d688475b5fe15c8579b8eac5eb",
+      "origin": "reviewable-ci-test-path-and-cleanup-fix"
     },
     {
       "path": "tests/security/auth/acceptance-rules.test.mjs",
@@ -2868,5 +2868,10 @@
   "basicNativeAcceptance": "ALPHA_SUBSET_ACCEPTED",
   "fullRoadmapStatus": "INCOMPLETE",
   "published": false,
-  "statusMeaning": "构建时未公开快照；实际发布以GitHub Release成功记录为准"
+  "statusMeaning": "构建时未公开快照；实际发布以GitHub Release成功记录为准",
+  "productSourceEvidenceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98",
+  "ciTestOnlyDelta": [
+    "tests/adapters/temporary-directory.mjs",
+    "tests/recovery/fault-injection.test.mjs"
+  ]
 }

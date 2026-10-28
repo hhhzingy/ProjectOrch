@@ -18,11 +18,13 @@ import {installSyntheticPolicy} from '../security/auth/synthetic-policy.mjs';
 
 const seed = 'a072-fixed-seed-v1';
 const mkEnv = (t, tag) => {
-  const dir = temporaryDirectory(t, `projectorch-a072-${tag}-`, () => {});
+  const stores=[];
+  const dir = temporaryDirectory(t, `projectorch-a072-${tag}-`, () => {for(const store of stores)if(!store.closed)store.close();});
   const mainPath = `${dir}/state.sqlite`;
   fs.mkdirSync(path.join(dir,'workspace'));
   const build = () => {
     const store = openStore(mainPath);
+    stores.push(store);
     createProject(store, { id: 'p1', name: '组合故障', hostId: 'h', canonicalRoot: dir, objective: 'A072' }, 100);
     installSyntheticPolicy(store,'p1',[{id:'team',revision:1,actions:['identity'],readPaths:[],writePaths:[],roleIds:[],delegableActions:[],maxDelegationDepth:0}]);
     store.transaction(db => {
