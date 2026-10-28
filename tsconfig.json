@@ -1,0 +1,29 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/runtime"
+    },
+    {
+      "path": "packages/persistence"
+    },
+    {
+      "path": "packages/adapter-contract"
+    },
+    {
+      "path": "apps/kernel"
+    },
+    {
+      "path": "apps/web"
+    },
+    {
+      "path": "packages/contracts"
+    },
+    {
+      "path": "packages/adapter-mock"
+    },
+    {
+      "path": "packages/domain"
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/message.schema.json",
+  "title": "ProjectOrch message.schema.json",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "toRoleId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "information",
+        "question",
+        "answer",
+        "task_request",
+        "result_notice",
+        "correction",
+        "control_request"
+      ]
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "replyToMessageId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifactId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "artifactId",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 64
+    },
+    "delivery": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "inbox",
+            "when_available",
+            "steer_current",
+            "interrupt_then_deliver"
+          ]
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "urgent"
+          ]
+        },
+        "expectedExecutionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "expectedBindingEpoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "mode",
+        "priority"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "enum": [
+                  "steer_current",
+                  "interrupt_then_deliver"
+                ]
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "expectedExecutionId",
+              "expectedBindingEpoch"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "requestId",
+    "projectId",
+    "toRoleId",
+    "kind",
+    "body",
+    "delivery"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "answer"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "replyToMessageId"
+        ]
+      }
+    }
+  ]
+}

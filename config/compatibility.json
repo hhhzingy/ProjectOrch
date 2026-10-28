@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "status": "EXACT_HISTORICAL_LOW_LEVEL_SUPPORT_ONLY",
+  "businessAcceptance": "NOT_COMPLETED",
+  "entries": [
+    {
+      "identity": {
+        "harnessId": "zcode",
+        "version": "0.17.0",
+        "executableSha256": "63c259c81e5d472b5f11c8d506070130cb04a1ecf84b80377a34ed6ec9048088",
+        "bundleSha256": "97490d0f06a7a225d54d47817acf4b4859cdb268b59f2490caaeda982bef063a",
+        "adapterProtocol": "zcode-cli-jsonl-v2",
+        "route": "official_cli"
+      },
+      "capabilities": {
+        "textInput": "verified",
+        "resume": "verified",
+        "historyRead": "verified",
+        "roleTools": "verified"
+      },
+      "evidence": "docs/SUPPORT_STATUS.json#zcode",
+      "testedAt": "2026-10-24"
+    },
+    {
+      "identity": {
+        "harnessId": "codex",
+        "version": "codex-cli 0.164.0-alpha.11.1",
+        "executableSha256": "1103e9e09c71fa2cd0afd6d8f3b9a2d63174fe8efd7cb5bd09f1cb14ef58a098",
+        "bundleSha256": null,
+        "adapterProtocol": "codex-app-server-jsonl-v2",
+        "route": "official_rpc"
+      },
+      "capabilities": {
+        "textInput": "verified",
+        "resume": "verified",
+        "historyRead": "verified",
+        "roleTools": "verified"
+      },
+      "evidence": "docs/SUPPORT_STATUS.json#codex",
+      "testedAt": "2026-10-27"
+    }
+  ]
+}

@@ -1,0 +1,2656 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/domain.schema.json",
+  "title": "领域详情与受控策略合同 v2",
+  "$defs": {
+    "ArtifactRef": {
+      "type": "object",
+      "properties": {
+        "artifactId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "artifactId",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "Dependency": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "requiredTaskRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "condition": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "artifact_available"
+          ]
+        },
+        "outputName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "taskId",
+        "requiredTaskRevision",
+        "condition"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "condition": {
+                "const": "artifact_available"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "outputName"
+            ]
+          }
+        }
+      ]
+    },
+    "AcceptanceRule": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ruleId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "mode": {
+              "const": "designated_reviewer"
+            },
+            "reviewerRoleId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "independent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ruleId",
+            "description",
+            "mode",
+            "reviewerRoleId",
+            "independent"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ruleId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "mode": {
+              "const": "automated_check"
+            },
+            "checkDefinitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "checkVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "parameters": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "ruleId",
+            "description",
+            "mode",
+            "checkDefinitionId",
+            "checkVersion",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ruleId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384
+            },
+            "mode": {
+              "const": "user"
+            }
+          },
+          "required": [
+            "ruleId",
+            "description",
+            "mode"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TaskSpec": {
+      "type": "object",
+      "properties": {
+        "goal": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16384
+        },
+        "inputArtifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactRef"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "outputRequirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "file",
+                  "report",
+                  "git_commit"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16384
+              }
+            },
+            "required": [
+              "name",
+              "kind",
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "acceptance": {
+          "type": "array",
+          "items": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/AcceptanceRule"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Dependency"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "goal",
+        "inputArtifacts",
+        "outputRequirements",
+        "acceptance",
+        "dependencies"
+      ],
+      "additionalProperties": false
+    },
+    "CheckDefinition": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "runner": {
+          "type": "string",
+          "enum": [
+            "registered_process",
+            "registered_validator"
+          ]
+        },
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "entrySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "parameterSchemaId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "scopePaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "runner",
+        "entryId",
+        "entrySha256",
+        "parameterSchemaId",
+        "timeoutMs",
+        "permissions",
+        "scopePaths",
+        "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "PermissionProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "readPaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "writePaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "roleIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "delegableActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "maxDelegationDepth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "actions",
+        "readPaths",
+        "writePaths",
+        "roleIds",
+        "delegableActions",
+        "maxDelegationDepth"
+      ],
+      "additionalProperties": false
+    },
+    "ExecutionLimits": {
+      "type": "object",
+      "properties": {
+        "totalConcurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "roleConcurrency": {
+          "const": 1
+        },
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "maxCorrectionTurns": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "maxManagementRounds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "maxDynamicRoles": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "wallTimeMs": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "costCeiling": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "costEnforcement": {
+          "type": "string",
+          "enum": [
+            "unavailable",
+            "advisory",
+            "harness_enforced"
+          ]
+        }
+      },
+      "required": [
+        "totalConcurrency",
+        "roleConcurrency",
+        "maxAttempts",
+        "maxCorrectionTurns",
+        "maxManagementRounds",
+        "maxDynamicRoles",
+        "wallTimeMs",
+        "costCeiling",
+        "costEnforcement"
+      ],
+      "additionalProperties": false
+    },
+    "Policy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/PermissionProfile"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "limits": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ExecutionLimits"
+        },
+        "nativeMode": {
+          "type": "string",
+          "enum": [
+            "disabled",
+            "verified_only"
+          ]
+        },
+        "writeIsolation": {
+          "type": "string",
+          "enum": [
+            "exclusive_workspace",
+            "enforced_paths"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "profiles",
+        "limits",
+        "nativeMode",
+        "writeIsolation"
+      ],
+      "additionalProperties": false
+    },
+    "EffectiveGrant": {
+      "type": "object",
+      "properties": {
+        "policyRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "profileRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "readPaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "writePaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "delegableActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "remainingLimits": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ExecutionLimits"
+        }
+      },
+      "required": [
+        "policyRevision",
+        "profileId",
+        "profileRevision",
+        "actions",
+        "readPaths",
+        "writePaths",
+        "delegableActions",
+        "remainingLimits"
+      ],
+      "additionalProperties": false
+    },
+    "WaitTarget": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "message"
+            },
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "kind",
+            "messageId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "question"
+            },
+            "questionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "questionRevision": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "kind",
+            "questionId",
+            "questionRevision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "task"
+            },
+            "taskId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "taskRevision": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "kind",
+            "taskId",
+            "taskRevision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "external"
+            },
+            "conditionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "conditionRevision": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verifierRoleId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "kind",
+            "conditionId",
+            "conditionRevision",
+            "verifierRoleId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Wait": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/WaitTarget"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "onTimeout": {
+          "type": "string",
+          "enum": [
+            "raise_issue",
+            "cancel_attempt"
+          ]
+        },
+        "taskRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "bindingEpoch": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "target",
+        "deadline",
+        "onTimeout",
+        "taskRevision",
+        "attemptId",
+        "bindingEpoch"
+      ],
+      "additionalProperties": false
+    },
+    "Answerer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "user"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "role"
+            },
+            "roleId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          "required": [
+            "kind",
+            "roleId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Question": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "taskId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "taskRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "bindingEpoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16384
+        },
+        "answerer": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Answerer"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "onTimeout": {
+          "type": "string",
+          "enum": [
+            "raise_issue",
+            "cancel_attempt"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open",
+            "answered",
+            "expired",
+            "cancelled"
+          ]
+        },
+        "answer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "revision",
+        "taskId",
+        "taskRevision",
+        "attemptId",
+        "bindingEpoch",
+        "prompt",
+        "answerer",
+        "deadline",
+        "onTimeout",
+        "state",
+        "answer"
+      ],
+      "additionalProperties": false
+    },
+    "Attempt": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "taskId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "taskRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bindingEpoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "dispatching",
+            "running",
+            "waiting_input",
+            "succeeded",
+            "failed",
+            "interrupted",
+            "unknown"
+          ]
+        },
+        "nativeExecutionId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "taskId",
+        "taskRevision",
+        "bindingEpoch",
+        "workspaceId",
+        "state",
+        "nativeExecutionId"
+      ],
+      "additionalProperties": false
+    },
+    "TaskDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "specRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "planRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "roleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "ready",
+            "active",
+            "waiting",
+            "review",
+            "accepted",
+            "blocked",
+            "cancelled"
+          ]
+        },
+        "spec": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/TaskSpec"
+        },
+        "currentAttempt": {
+          "anyOf": [
+            {
+              "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Attempt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "wait": {
+          "anyOf": [
+            {
+              "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Wait"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resultIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "integrationIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "revision",
+        "specRevision",
+        "planRevision",
+        "roleId",
+        "state",
+        "spec",
+        "currentAttempt",
+        "wait",
+        "resultIds",
+        "integrationIds"
+      ],
+      "additionalProperties": false
+    },
+    "RoleDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "charter": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16384
+        },
+        "parentRoleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scopePaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "effectiveGrant": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/EffectiveGrant"
+        },
+        "desiredState": {
+          "type": "string",
+          "enum": [
+            "enabled",
+            "paused",
+            "disabled"
+          ]
+        },
+        "bindingState": {
+          "type": "string",
+          "enum": [
+            "unbound",
+            "provisioning",
+            "ready",
+            "error"
+          ]
+        },
+        "bindingEpoch": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sessionRef": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "harnessId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "hostId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "profileId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "nativeConversationId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "nativeWorkspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "harnessId",
+                "hostId",
+                "profileId",
+                "nativeConversationId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observedState": {
+          "type": "string",
+          "enum": [
+            "idle",
+            "running",
+            "waiting_approval",
+            "offline",
+            "unknown"
+          ]
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "revision",
+        "name",
+        "charter",
+        "parentRoleId",
+        "scopePaths",
+        "effectiveGrant",
+        "desiredState",
+        "bindingState",
+        "bindingEpoch",
+        "sessionRef",
+        "observedState",
+        "observedAt"
+      ],
+      "additionalProperties": false
+    },
+    "ArtifactDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "taskId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "file",
+            "report",
+            "git_commit"
+          ]
+        },
+        "pathRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "commitId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "byteSize": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "readUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "taskId",
+        "version",
+        "kind",
+        "pathRef",
+        "sha256",
+        "commitId",
+        "byteSize",
+        "readUrl"
+      ],
+      "additionalProperties": false
+    },
+    "IssueDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "taskId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16384
+        },
+        "ownerRoleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open",
+            "assigned",
+            "deciding",
+            "applying",
+            "monitoring",
+            "resolved",
+            "escalated"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactRef"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "triedActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16384
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "resolution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "revision",
+        "taskId",
+        "category",
+        "summary",
+        "ownerRoleId",
+        "state",
+        "evidence",
+        "triedActions",
+        "resolution"
+      ],
+      "additionalProperties": false
+    },
+    "Workspace": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canonicalPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "git",
+            "directory"
+          ]
+        },
+        "ownerTaskId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "managed": {
+          "type": "boolean"
+        },
+        "writePaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": [
+            "enforced",
+            "advisory",
+            "unknown"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "available",
+            "reserved",
+            "unknown",
+            "retired"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "revision",
+        "canonicalPath",
+        "kind",
+        "ownerTaskId",
+        "managed",
+        "writePaths",
+        "enforcement",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "Handover": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "roleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "fromBindingEpoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "planRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "artifact": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactRef"
+        },
+        "taskSpecRevisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "taskId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "specRevision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "taskId",
+              "specRevision"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "workspaceVersions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "workspaceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "workspaceId",
+              "contentHash"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "unresolvedIssueIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "pendingEffects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "verifierRoleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "prepared",
+            "verified",
+            "consumed",
+            "stale"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "roleId",
+        "fromBindingEpoch",
+        "revision",
+        "planRevision",
+        "artifact",
+        "taskSpecRevisions",
+        "workspaceVersions",
+        "unresolvedIssueIds",
+        "pendingEffects",
+        "verifierRoleId",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "Integration": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "taskId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "targetWorkspaceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "targetVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "checkRefs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "id",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "integrating",
+            "verified",
+            "failed"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactRef"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "outputTarget": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "kind": {
+              "enum": [
+                "files",
+                "git"
+              ]
+            },
+            "outputVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "contentHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "resultId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "contentPath": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "outputVersion",
+            "contentHash",
+            "resultId"
+          ],
+          "additionalProperties": false
+        },
+        "checkRuns": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "checkId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "checkVersion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "outcome": {
+                "enum": [
+                  "passed",
+                  "failed"
+                ]
+              },
+              "evidenceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "id",
+              "checkId",
+              "checkVersion",
+              "outcome",
+              "evidenceSha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "review": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "decision": {
+              "enum": [
+                "accept",
+                "reject"
+              ]
+            },
+            "reviewerRoleId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "repairTaskId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "targetChanged": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "decision",
+            "reviewerRoleId",
+            "repairTaskId",
+            "targetChanged"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "revision",
+        "taskId",
+        "targetWorkspaceId",
+        "targetVersion",
+        "artifacts",
+        "checkRefs",
+        "state",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "Receipt": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "stored",
+            "queued",
+            "applying",
+            "completed",
+            "uncertain",
+            "failed"
+          ]
+        },
+        "receiptUrl": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "entityIds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "localRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "entityType": {
+                "type": "string",
+                "enum": [
+                  "project",
+                  "role",
+                  "task",
+                  "attempt",
+                  "message",
+                  "artifact",
+                  "case",
+                  "question",
+                  "workspace",
+                  "handover",
+                  "integration",
+                  "policy",
+                  "check",
+                  "hold",
+                  "result",
+                  "binding"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "localRef",
+              "entityType",
+              "id",
+              "revision",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "https://projectorch.invalid/schemas/error.schema.json#/$defs/detail"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lastEventSequence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "requestId",
+        "projectId",
+        "commandId",
+        "status",
+        "receiptUrl",
+        "entityIds",
+        "error",
+        "lastEventSequence"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "failed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "error": {
+                "$ref": "https://projectorch.invalid/schemas/error.schema.json#/$defs/detail"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Source": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "authenticated_user",
+            "role_forwarded",
+            "native_unverified",
+            "kernel"
+          ]
+        },
+        "principalId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "originCommandId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sessionRef": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "harnessId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "hostId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "profileId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "nativeConversationId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "nativeWorkspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "harnessId",
+                "hostId",
+                "profileId",
+                "nativeConversationId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "principalId",
+        "originCommandId",
+        "sessionRef"
+      ],
+      "additionalProperties": false
+    },
+    "Overview": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "planRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "acceptedTaskIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "unintegratedArtifactIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "issueId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "ownerRoleId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16384
+              }
+            },
+            "required": [
+              "issueId",
+              "ownerRoleId",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "nextTaskIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "openQuestionIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "dispatchHoldIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "limits": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ExecutionLimits"
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "projectId",
+        "planRevision",
+        "acceptedTaskIds",
+        "unintegratedArtifactIds",
+        "blockers",
+        "nextTaskIds",
+        "openQuestionIds",
+        "dispatchHoldIds",
+        "limits",
+        "observedAt"
+      ],
+      "additionalProperties": false
+    },
+    "Identity": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "roleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "bindingEpoch": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sessionRef": {
+          "type": "object",
+          "properties": {
+            "harnessId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "hostId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "profileId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "nativeConversationId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "nativeWorkspaceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "harnessId",
+            "hostId",
+            "profileId",
+            "nativeConversationId"
+          ],
+          "additionalProperties": false
+        },
+        "effectiveGrant": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/EffectiveGrant"
+        },
+        "protocolVersion": {
+          "const": 2
+        },
+        "startupRequired": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "projectId",
+        "roleId",
+        "bindingEpoch",
+        "sessionRef",
+        "effectiveGrant",
+        "protocolVersion",
+        "startupRequired"
+      ],
+      "additionalProperties": false
+    },
+    "ResultDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "taskId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "taskRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "succeeded",
+            "failed",
+            "inconclusive"
+          ]
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "artifactId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "outputName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "artifactId",
+              "version",
+              "outputName"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "checkVersion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "failed",
+                  "not_run"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactRef"
+                },
+                "minItems": 1,
+                "maxItems": 100
+              }
+            },
+            "required": [
+              "ruleId",
+              "checkVersion",
+              "outcome",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "reviewerPrincipalId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "decision": {
+                "type": "string",
+                "enum": [
+                  "accept",
+                  "reject",
+                  "needs_evidence"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactRef"
+                },
+                "minItems": 0,
+                "maxItems": 100
+              }
+            },
+            "required": [
+              "ruleId",
+              "reviewerPrincipalId",
+              "decision",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "eligibility": {
+          "type": "string",
+          "enum": [
+            "current",
+            "stale",
+            "disputed"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "taskId",
+        "taskRevision",
+        "attemptId",
+        "outcome",
+        "outputs",
+        "checks",
+        "decisions",
+        "eligibility"
+      ],
+      "additionalProperties": false
+    },
+    "GoalHold": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Source"
+        },
+        "observedPlanRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "affectedTaskIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "scopeKnown": {
+          "type": "boolean"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "resolved",
+            "awaiting_user"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16384
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "revision",
+        "source",
+        "observedPlanRevision",
+        "affectedTaskIds",
+        "scopeKnown",
+        "state",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "MessageDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "toRoleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "stored",
+            "queued",
+            "sending",
+            "delivered",
+            "acknowledged",
+            "resolved",
+            "uncertain",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "source": {
+          "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Source"
+        },
+        "replyToMessageId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "taskId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "toRoleId",
+        "body",
+        "state",
+        "source",
+        "replyToMessageId",
+        "taskId"
+      ],
+      "additionalProperties": false
+    },
+    "SessionDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "sessionRef": {
+          "type": "object",
+          "properties": {
+            "harnessId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "hostId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "profileId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "nativeConversationId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "nativeWorkspaceId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "harnessId",
+            "hostId",
+            "profileId",
+            "nativeConversationId"
+          ],
+          "additionalProperties": false
+        },
+        "observedState": {
+          "type": "string",
+          "enum": [
+            "idle",
+            "running",
+            "waiting_approval",
+            "offline",
+            "unknown"
+          ]
+        },
+        "attachState": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "verified",
+            "unsupported"
+          ]
+        },
+        "bindingRoleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "sessionRef",
+        "observedState",
+        "attachState",
+        "bindingRoleId"
+      ],
+      "additionalProperties": false
+    },
+    "ArtifactChunk": {
+      "type": "object",
+      "properties": {
+        "artifactId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "content": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 65536
+        },
+        "encoding": {
+          "type": "string",
+          "enum": [
+            "utf8",
+            "base64"
+          ],
+          "description": "content的显式编码；offset/nextOffset按原始字节计算，sha256为完整原始内容哈希。"
+        },
+        "nextOffset": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "artifactId",
+        "version",
+        "offset",
+        "content",
+        "encoding",
+        "nextOffset",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "IntegrationRunEvidence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "integrationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "evidenceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evidence": {
+          "type": "object"
+        },
+        "target": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "integrationId",
+        "targetId",
+        "evidenceSha256",
+        "evidence",
+        "target"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

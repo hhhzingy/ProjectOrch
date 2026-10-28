@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "requestId": "report-wait",
+  "projectId": "project-example",
+  "type": "task.report",
+  "payload": {
+    "taskId": "task-example",
+    "attemptId": "attempt-example",
+    "bindingEpoch": 1,
+    "report": "等待用户选择",
+    "wait": {
+      "target": {
+        "kind": "question",
+        "questionId": "question-example",
+        "questionRevision": 0
+      },
+      "deadline": "2026-10-19T00:00:00Z",
+      "onTimeout": "raise_issue",
+      "taskRevision": 0,
+      "attemptId": "attempt-example",
+      "bindingEpoch": 1
+    }
+  }
+}

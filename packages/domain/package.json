@@ -1,0 +1,125 @@
+{
+  "name": "@projectorch/domain",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./policy": {
+      "types": "./dist/policy/index.d.ts",
+      "import": "./dist/policy/index.js"
+    },
+    "./projects": {
+      "types": "./dist/projects/index.d.ts",
+      "import": "./dist/projects/index.js"
+    },
+    "./roles": {
+      "types": "./dist/roles/index.d.ts",
+      "import": "./dist/roles/index.js"
+    },
+    "./artifacts": {
+      "types": "./dist/artifacts/index.d.ts",
+      "import": "./dist/artifacts/index.js"
+    },
+    "./messages": {
+      "types": "./dist/messages/index.d.ts",
+      "import": "./dist/messages/index.js"
+    },
+    "./tasks": {
+      "types": "./dist/tasks/index.d.ts",
+      "import": "./dist/tasks/index.js"
+    },
+    "./changesets": {
+      "types": "./dist/changesets/index.d.ts",
+      "import": "./dist/changesets/index.js"
+    },
+    "./policy/delegation": {
+      "types": "./dist/policy/delegation.d.ts",
+      "import": "./dist/policy/delegation.js"
+    },
+    "./workspaces": {
+      "types": "./dist/workspaces/index.d.ts",
+      "import": "./dist/workspaces/index.js"
+    },
+    "./handovers": {
+      "types": "./dist/handovers/index.d.ts",
+      "import": "./dist/handovers/index.js"
+    },
+    "./artifacts/git": {
+      "types": "./dist/artifacts/git.d.ts",
+      "import": "./dist/artifacts/git.js"
+    },
+    "./artifacts/content": {
+      "types": "./dist/artifacts/content.d.ts",
+      "import": "./dist/artifacts/content.js"
+    },
+    "./views": {
+      "types": "./dist/views/index.d.ts",
+      "import": "./dist/views/index.js"
+    },
+    "./issues": {
+      "types": "./dist/issues/index.d.ts",
+      "import": "./dist/issues/index.js"
+    },
+    "./projection": {
+      "types": "./dist/projection/index.d.ts",
+      "import": "./dist/projection/index.js"
+    },
+    "./results": {
+      "types": "./dist/results/index.d.ts",
+      "import": "./dist/results/index.js"
+    },
+    "./integrations": {
+      "types": "./dist/integrations/index.d.ts",
+      "import": "./dist/integrations/index.js"
+    },
+    "./budget": {
+      "types": "./dist/budget/index.d.ts",
+      "import": "./dist/budget/index.js"
+    },
+    "./waits": {
+      "types": "./dist/waits/index.d.ts",
+      "import": "./dist/waits/index.js"
+    },
+    "./scheduler": {
+      "types": "./dist/scheduler/index.d.ts",
+      "import": "./dist/scheduler/index.js"
+    },
+    "./conversation": {
+      "types": "./dist/conversation/index.d.ts",
+      "import": "./dist/conversation/index.js"
+    },
+    "./native-binding": {
+      "types": "./dist/native-binding/index.d.ts",
+      "import": "./dist/native-binding/index.js"
+    },
+    "./bootstrap": {
+      "types": "./dist/bootstrap/index.d.ts",
+      "import": "./dist/bootstrap/index.js"
+    },
+    "./dispatch-guard": {
+      "types": "./dist/dispatch-guard/index.d.ts",
+      "import": "./dist/dispatch-guard/index.js"
+    },
+    "./questions": {
+      "types": "./dist/questions/index.d.ts",
+      "import": "./dist/questions/index.js"
+    },
+    "./goal-holds": {
+      "types": "./dist/goal-holds/index.d.ts",
+      "import": "./dist/goal-holds/index.js"
+    },
+    "./plan-revisions": {
+      "types": "./dist/plan-revisions/index.d.ts",
+      "import": "./dist/plan-revisions/index.js"
+    }
+  },
+  "dependencies": {
+    "@projectorch/persistence": "0.1.0-alpha.1",
+    "@projectorch/contracts": "0.1.0-alpha.1"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hhhzingy/ProjectOrch"
+  }
+}

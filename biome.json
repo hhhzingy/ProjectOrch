@@ -1,0 +1,46 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "files": {
+    "includes": [
+      "apps/**/src/**/*.ts",
+      "packages/**/src/**/*.ts",
+      "tests/**/*.mjs",
+      "scripts/build-app.mjs",
+      "scripts/build-windows-candidate.mjs",
+      "scripts/verify-windows-candidate.mjs",
+      "scripts/verify-local-candidate.mjs",
+      "scripts/verify-windows-upgrade.mjs",
+      "scripts/audit-windows-candidate.mjs",
+      "scripts/mcp-control-bridge.mjs",
+      "scripts/verify-bootstrap.mjs",
+      "scripts/generate-contracts.mjs",
+      "tests/contracts/types.test.ts"
+    ]
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "assist": {
+    "enabled": false
+  },
+  "overrides": [
+    {
+      "includes": [
+        "packages/contracts/src/schemas.generated.ts"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noThenProperty": "off"
+          }
+        }
+      }
+    }
+  ]
+}

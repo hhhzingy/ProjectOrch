@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {executionFixture} from './execution-fixture.mjs';
+import {installSyntheticPolicy} from './synthetic-policy.mjs';
+import {registerArtifact} from '../../../packages/domain/dist/artifacts/index.js';
+import {submitResult} from '../../../packages/domain/dist/results/index.js';
+import {createToolDispatcher} from '../../../apps/kernel/dist/tools/gateway-tools.js';
+import {mcpToolEntries,mcpToolArguments} from '../../../apps/kernel/dist/tools/mcp-catalog.js';
+import fs from 'node:fs';import path from 'node:path';
+import {createProject} from '../../../packages/domain/dist/projects/index.js';
+import {createRole} from '../../../packages/domain/dist/roles/index.js';
+import {createTaskWithin} from '../../../packages/domain/dist/tasks/index.js';
+
+test('结果详情复用既有合同；按实际任务与成果范围读取，不泄露越界引用',t=>{
+ const f=executionFixture(t),attempt=f.prepare();
+ registerArtifact(f.store,{id:'visible',projectId:'p',taskId:'task',taskRevision:1,version:'v1',pathRef:'tasks/report.txt',sha256:'a'.repeat(64)},310);
+ registerArtifact(f.store,{id:'hidden',projectId:'p',taskId:'task',taskRevision:1,version:'v1',pathRef:'private/secret.txt',sha256:'b'.repeat(64)},310);
+ submitResult(f.store,{id:'result',projectId:'p',taskId:'task',taskRevision:1,attemptId:attempt,outcome:'succeeded',outputs:[{artifactId:'visible',version:'v1',outputName:'report'},{artifactId:'hidden',version:'v1',outputName:'other'}],summary:'原结果摘要'},320);
+ const dispatcher=createToolDispatcher(f.store,{now:()=>350,callerNativeConversationId:f.session.nativeConversationId});
+ const entry=mcpToolEntries.find(e=>e.tool==='result.read');assert.ok(entry);assert.deepEqual(mcpToolArguments(entry,{resultId:'result'}),{resultId:'result'});
+ assert.throws(()=>mcpToolArguments(entry,{resultId:'result',projectId:'other'}));
+ const without=dispatcher(f.principal,'result.read',{resultId:'result'});assert.equal(without.ok,true);assert.deepEqual(without.payload.outputs,[]);assert.doesNotMatch(JSON.stringify(without),/private\/secret|visible|hidden/);
+ const profile={id:'execution',revision:1,actions:['identity','task.read','artifact.read'],readPaths:['tasks/*'],writePaths:['tasks/*'],roleIds:[],delegableActions:[],maxDelegationDepth:0};installSyntheticPolicy(f.store,'p',[profile]);
+ const detail=dispatcher(f.principal,'result.read',{resultId:'result'});assert.equal(detail.ok,true,JSON.stringify(detail));assert.equal(detail.payload.attemptId,attempt);assert.equal(detail.payload.executionState,'dispatching');assert.equal(detail.payload.summary,'原结果摘要');
+ assert.deepEqual(detail.payload.outputs,[{artifactId:'visible',version:'v1',outputName:'report'}]);assert.deepEqual(detail.payload.unavailableOutputNames,['other']);assert.doesNotMatch(JSON.stringify(detail),/private\/secret/);
+ const missing=dispatcher(f.principal,'result.read',{resultId:'missing'});assert.equal(missing.ok,false);assert.equal(missing.payload.error,'FORBIDDEN');
+ installSyntheticPolicy(f.store,'p',[{...profile,readPaths:['tasks/next']}]);const denied=dispatcher(f.principal,'result.read',{resultId:'result'});assert.deepEqual(denied.payload,missing.payload);
+});
+
+test('裁决读取复用任务授权、屏蔽受限证据及原因、无写作用，跨项目/撤销拒绝',t=>{
+ const f=executionFixture(t),attempt=f.prepare();
+ registerArtifact(f.store,{id:'visible-evidence',projectId:'p',taskId:'task',taskRevision:1,version:'v1',pathRef:'tasks/review.txt',sha256:'a'.repeat(64)},310);
+ registerArtifact(f.store,{id:'hidden-evidence',projectId:'p',taskId:'task',taskRevision:1,version:'v1',pathRef:'private/secret.txt',sha256:'b'.repeat(64)},310);
+ submitResult(f.store,{id:'result-decisions',projectId:'p',taskId:'task',taskRevision:1,attemptId:attempt,outcome:'succeeded',outputs:[],summary:'nonprivate'},320);
+ f.store.db.prepare('INSERT INTO result_rule_decisions VALUES(?,?,?,?,?,?,?,?,?)').run('decision','p','result-decisions',1,'review','reject',f.principal.credentialId,JSON.stringify({reason:'hidden-evidence private/secret.txt SECRET',artifactIds:['visible-evidence','hidden-evidence']}),330);
+ const profile={id:'execution',revision:1,actions:['identity','task.read','artifact.read'],readPaths:['tasks/*'],writePaths:['tasks/*'],roleIds:[],delegableActions:[],maxDelegationDepth:0};installSyntheticPolicy(f.store,'p',[profile]);
+ const dispatcher=createToolDispatcher(f.store,{now:()=>350,callerNativeConversationId:f.session.nativeConversationId}),before=f.store.db.prepare('SELECT total_changes() n').get().n;
+ const response=dispatcher(f.principal,'result.read',{resultId:'result-decisions'});assert.equal(response.ok,true);const decision=response.payload.decisions[0];
+ assert.deepEqual(decision,{decisionId:'decision',resultId:'result-decisions',taskRevision:1,ruleId:'review',decision:'reject',reviewer:{kind:'bound_agent',roleId:'worker'},createdAt:330,evidenceArtifactIds:['visible-evidence'],evidenceRestricted:true,reason:null});
+ assert.doesNotMatch(JSON.stringify(response),/hidden-evidence|private\/secret|SECRET|token_hash|session_key_hash/);assert.equal(JSON.stringify(response).includes(f.principal.credentialId),false);assert.equal(f.store.db.prepare('SELECT total_changes() n').get().n,before);
+ const otherRoot=path.join(f.dir,'other-project');fs.mkdirSync(otherRoot);createProject(f.store,{id:'other',name:'other',hostId:'host',canonicalRoot:otherRoot,objective:'isolation'},340);
+ createRole(f.store,{id:'other-worker',projectId:'other',name:'other',charter:'other',permissionProfileId:'execution'},340);
+ f.store.db.exec("INSERT INTO sessions(id,harness_id,host_id,profile_id,native_conversation_id) VALUES('other-session','synthetic','host','isolated','other-native');INSERT INTO role_bindings(id,project_id,role_id,session_id,epoch,started_at) VALUES('other-binding','other','other-worker','other-session',1,340)");
+ f.store.transaction(db=>createTaskWithin(db,{id:'other-task',projectId:'other',roleId:'other-worker',goal:'other',acceptance:[],dependencies:[]},340));
+ f.store.db.exec("INSERT INTO attempts(id,project_id,task_id,task_revision,binding_id,binding_epoch,state,started_at,ended_at) VALUES('other-attempt','other','other-task',1,'other-binding',1,'succeeded',340,341)");
+ submitResult(f.store,{id:'other-result',projectId:'other',taskId:'other-task',taskRevision:1,attemptId:'other-attempt',outcome:'succeeded',outputs:[],summary:'CROSS_PROJECT_SECRET'},342);
+ const missing=dispatcher(f.principal,'result.read',{resultId:'other-result'});assert.equal(missing.ok,false);assert.equal(missing.payload.error,'FORBIDDEN');
+ f.store.db.prepare('UPDATE agent_credentials SET revoked_at=340 WHERE id=?').run(f.principal.credentialId);
+ assert.equal(dispatcher(f.principal,'result.read',{resultId:'result-decisions'}).ok,false);
+});

@@ -1,0 +1,649 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/evidence.schema.json",
+  "title": "ProjectOrch evidence.schema.json",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "evidenceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "caseId": {
+      "type": "string",
+      "pattern": "^A[0-9]{3}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_RUN"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "unit",
+        "integration",
+        "native",
+        "e2e",
+        "security",
+        "load",
+        "release",
+        "manual"
+      ]
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "os": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "harnessVersions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "client": {
+                "type": "string",
+                "minLength": 1
+              },
+              "backend": {
+                "type": "string",
+                "minLength": 1
+              },
+              "adapter": {
+                "type": "string",
+                "minLength": 1
+              },
+              "protocol": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "client",
+              "backend",
+              "adapter",
+              "protocol"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "os",
+        "node"
+      ],
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 8192
+      },
+      "minItems": 0,
+      "maxItems": 128
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 8192
+      },
+      "minItems": 0,
+      "maxItems": 128
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "raw_log",
+              "native_event",
+              "dual_end_observation",
+              "artifact",
+              "review",
+              "timing",
+              "other"
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 128
+    },
+    "nativeSessionRefs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "harnessId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "hostId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "profileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "nativeConversationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "nativeWorkspaceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "harnessId",
+          "hostId",
+          "profileId",
+          "nativeConversationId"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 32
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 16384
+    },
+    "subject": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "applicationCommit": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "sourceTreeSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "contractVersion": {
+              "const": 2
+            },
+            "targetPlatform": {
+              "type": "string",
+              "minLength": 1
+            },
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 128
+            },
+            "releaseArtifactHashes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "minItems": 0,
+              "maxItems": 128
+            }
+          },
+          "required": [
+            "applicationCommit",
+            "sourceTreeSha256",
+            "contractVersion",
+            "targetPlatform",
+            "components",
+            "releaseArtifactHashes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "executorId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "PENDING",
+            "APPROVED",
+            "CHANGES_REQUESTED"
+          ]
+        },
+        "reviewerId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "report": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subjectSha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "reviewerId",
+        "report",
+        "subjectSha256"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "APPROVED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reviewerId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "report": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "path",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              },
+              "subjectSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "applicability": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "candidateSourceTreeSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "unchangedComponentIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "maxItems": 128
+            },
+            "impactReport": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "reviewerId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "candidateSourceTreeSha256",
+            "unchangedComponentIds",
+            "impactReport",
+            "reviewerId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "evidenceId",
+    "caseId",
+    "status",
+    "kind",
+    "recordedAt",
+    "environment",
+    "steps",
+    "assertions",
+    "files",
+    "nativeSessionRefs",
+    "notes",
+    "subject",
+    "executorId",
+    "review",
+    "applicability"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PASS"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "subject": {
+            "type": "object",
+            "properties": {
+              "applicationCommit": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sourceTreeSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "contractVersion": {
+                "const": 2
+              },
+              "targetPlatform": {
+                "type": "string",
+                "minLength": 1
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 128
+              },
+              "releaseArtifactHashes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "minItems": 0,
+                "maxItems": 128
+              }
+            },
+            "required": [
+              "applicationCommit",
+              "sourceTreeSha256",
+              "contractVersion",
+              "targetPlatform",
+              "components",
+              "releaseArtifactHashes"
+            ],
+            "additionalProperties": false
+          },
+          "executorId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "steps": {
+            "minItems": 1
+          },
+          "assertions": {
+            "minItems": 1
+          },
+          "review": {
+            "properties": {
+              "status": {
+                "const": "APPROVED"
+              }
+            }
+          },
+          "files": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "native"
+          },
+          "status": {
+            "const": "PASS"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "environment": {
+            "required": [
+              "harnessVersions"
+            ],
+            "properties": {
+              "harnessVersions": {
+                "minProperties": 1
+              }
+            }
+          },
+          "nativeSessionRefs": {
+            "minItems": 1
+          },
+          "files": {
+            "contains": {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "native_event",
+                    "dual_end_observation"
+                  ]
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "release"
+          },
+          "status": {
+            "const": "PASS"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "subject": {
+            "properties": {
+              "releaseArtifactHashes": {
+                "minItems": 1
+              }
+            }
+          },
+          "files": {
+            "contains": {
+              "properties": {
+                "kind": {
+                  "const": "artifact"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

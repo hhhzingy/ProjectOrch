@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "harnessId": "mock",
+  "hostId": "host-example",
+  "adapterVersion": "0.0.0-example",
+  "nativeVersion": "not-tested",
+  "protocolVersion": "draft-v1",
+  "observedAt": "2026-10-18T00:00:00Z",
+  "capabilities": {
+    "attachExisting": {
+      "state": "verified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "readHistory": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "streamEvents": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "resumeEvents": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "wakeIdle": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "queueBusy": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "steerActive": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "interrupt": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "deduplicateCommand": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "trustedCallerIdentity": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "nativeApprovals": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "createSession": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    },
+    "openNativeSession": {
+      "state": "unverified",
+      "semantics": "示例占位；需要实际验证",
+      "evidenceRefs": []
+    }
+  }
+}

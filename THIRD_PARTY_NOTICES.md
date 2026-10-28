@@ -1,0 +1,11 @@
+# 第三方许可与权利边界
+
+ProjectOrch采用Apache-2.0，官方原文见根LICENSE；维护者hhhzingy，目标https://github.com/hhhzingy/ProjectOrch。private:true仅防误发布npm，不否定Apache授权；项目许可不改变第三方许可。
+
+源码不内嵌Node或第三方node_modules。依赖由package-lock.json和pnpm-lock.yaml固定，npm ci按平台安装；许可声明取各包元数据，许可正文须检查对应包或上游母包。开发依赖与运行依赖分别以锁文件和工作区package.json为准，不推断它们采用同一许可。
+
+本次Windows安装中的Biome平台二进制包声明了许可，但未自带独立LICENSE正文；@biomejs/biome母包含许可文本。平台二进制不在此源码ZIP或ProjectOrch运行时ZIP中，若将来另行分发开发工具二进制，需再确认母包许可与该二进制的覆盖关系，不把声明或父目录文本当作已完成法律核准。
+
+Windows候选包含固定Node运行时、运行依赖、对应第三方LICENSE正文、THIRD_PARTY_NOTICES.md及DEPENDENCIES.json；Node与附带组件的授权见runtime/NODE_LICENSE.txt。ProjectOrch自身Apache-2.0许可已决定，各第三方组件仍遵循其许可。SBOM是实际清单，尚未独立Schema认证。
+
+公开前需核对项目自身代码与文档的版权归属、所有第三方许可和分发条件。维护者hhhzingy与目标仓库https://github.com/hhhzingy/ProjectOrch已确定；仅私密安全入口尚未实际启用，不制造邮箱或已可用的安全联系链接。

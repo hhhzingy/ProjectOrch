@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/project-create.schema.json",
+  "title": "ProjectOrch project-create.schema.json",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "hostId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "rootPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 16384
+    },
+    "initialPolicy": {
+      "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Policy"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "requestId",
+    "name",
+    "hostId",
+    "rootPath",
+    "objective",
+    "initialPolicy"
+  ],
+  "additionalProperties": false
+}

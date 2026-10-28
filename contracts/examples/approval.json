@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-approval-example",
+  "projectId": "project-example",
+  "roleId": "role-example",
+  "bindingEpoch": 1,
+  "nativeApprovalId": "approval-example",
+  "expectedExecutionId": "execution-example",
+  "decision": "decline"
+}

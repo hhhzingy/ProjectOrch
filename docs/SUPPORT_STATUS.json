@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-10-28",
+  "upstreamSourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98",
+  "publicationReadiness": "ALPHA_SUBSET_ACCEPTED_PENDING_PUBLICATION",
+  "basicNativeAcceptance": "ALPHA_SUBSET_ACCEPTED",
+  "scope": "Windows x64；精确官方程序字节/协议，默认模型，仅现有账号，串行三角色；不修改原生软件",
+  "identities": [
+    {
+      "identity": {
+        "harnessId": "zcode",
+        "version": "0.17.0",
+        "executableSha256": "63c259c81e5d472b5f11c8d506070130cb04a1ecf84b80377a34ed6ec9048088",
+        "bundleSha256": "97490d0f06a7a225d54d47817acf4b4859cdb268b59f2490caaeda982bef063a",
+        "adapterProtocol": "zcode-cli-jsonl-v2",
+        "route": "official_cli"
+      },
+      "lowLevelCapabilities": {
+        "textInput": "verified",
+        "resume": "verified",
+        "historyRead": "verified",
+        "roleTools": "verified"
+      },
+      "originalMatrixTestedAt": "2026-10-24",
+      "applicability": "精确官方身份的历史低层逐能力结论保留；19dc第一项目与1eb独立第二项目的基本Alpha子集分别独立确认。仅4处安全诊断透传适用差异明确，完整路线/全部模型权益/其他身份不外推。"
+    },
+    {
+      "identity": {
+        "harnessId": "codex",
+        "version": "codex-cli 0.164.0-alpha.11.1",
+        "executableSha256": "1103e9e09c71fa2cd0afd6d8f3b9a2d63174fe8efd7cb5bd09f1cb14ef58a098",
+        "bundleSha256": null,
+        "adapterProtocol": "codex-app-server-jsonl-v2",
+        "route": "official_rpc"
+      },
+      "lowLevelCapabilities": {
+        "textInput": "verified",
+        "resume": "verified",
+        "historyRead": "verified",
+        "roleTools": "verified"
+      },
+      "originalMatrixTestedAt": "2026-10-27",
+      "applicability": "精确官方身份的历史低层逐能力结论保留；19dc第一项目与1eb独立第二项目的基本Alpha子集分别独立确认。仅4处安全诊断透传适用差异明确，完整路线/全部模型权益/其他身份不外推。"
+    }
+  ],
+  "evidenceFingerprints": [
+    {
+      "label": "codex-low-level",
+      "sha256": "890ad6097d6add0f3f1bd833c4c3f57e04a343ac4c995126a206ad52874e9df3"
+    },
+    {
+      "label": "codex-role-tools",
+      "sha256": "78380d28b2c422da3066c307102ec407c31ebd3c585e11f7395ef07b5a3892f8"
+    },
+    {
+      "label": "zcode-precursor-roles",
+      "sha256": "4512a5c850fc6e54b6ff043bda82848a7df18d7bcdf4c294820754ad04aec777"
+    },
+    {
+      "label": "independent-native-facts",
+      "sha256": "55b77acd4c148bd35a008aff999d3d8ae648999196bccae01e46c93e6fa92e9a"
+    },
+    {
+      "label": "current-native-rate-boundary",
+      "sha256": "7f4ff9912fd4d99dbe93166c8cc6237f4c8a558960dc10f417d3d357a1a10f13"
+    },
+    {
+      "label": "native-first-project",
+      "sha256": "ea63e71b22e77737d922b7deebe8bd6237f508c073d2dc88850040d9355c125a"
+    },
+    {
+      "label": "native-second-project-interruption",
+      "sha256": "ce665e12852ffe3d08c84e804dff624c473c3aa6040fb89a5becb7730fa1e705"
+    },
+    {
+      "label": "current-offline-fix",
+      "sha256": "156097aca1614d47fe4991f54063da90082a49a0d1eda67bf9dd921183e1bc00"
+    },
+    {
+      "label": "native-second-project-final",
+      "sha256": "f4ad769c6a8baad6bef114a702a7a014fb4b41180e2c3ebb068089993e86a4aa"
+    },
+    {
+      "label": "native-evidence-applicability",
+      "sha256": "43696b9393a8bf51c85b396886095a192fe5c4ee6fd5f4adf8ab21c75086eef5"
+    }
+  ],
+  "notEstablished": [
+    "完整85任务路线及全部规划验收；同一源码hash连续两次原生场景",
+    "所有账号/模型权益及无限额度",
+    "不匹配或更新后的Harness程序身份",
+    "nativeCancel/nativeApprovals/任意原生UI附着",
+    "干净Windows/完整云CI"
+  ],
+  "normalUse": "配置官方已登录程序；程序自动比较精确身份并遵守项目策略、权限和预算。不要手改verified、程序哈希或SQLite。维护者用实际测试更新适用数据；不匹配版本保持拒绝。",
+  "nextReleaseGate": "最终公开件独立核对后按既有授权发布；发布事实另以远端成功记录为准，不再发送模型或恢复旧未知。",
+  "scenarioStatus": {
+    "firstProject": "INDEPENDENTLY_REVIEWED_PASS_ON_19DC",
+    "independentSecondProject": "INDEPENDENTLY_REVIEWED_PASS_ON_1EB",
+    "previousSecondProject": "QUOTA_FAILED_PRESERVED_NOT_RESUMED",
+    "currentSource": "ALPHA_SUBSET_ACCEPTED_WITH_EXPLICIT_DIAGNOSTIC_CHANGE_APPLICABILITY"
+  },
+  "currentSourceDelta": "与19dc仅4处安全诊断透传，业务/身份/权限/终态语义不变；5ada到1eb只删除测试的两条无用私有导入。各原生证据保留实际subject，不重绑旧记录。",
+  "fullRoadmapStatus": "INCOMPLETE",
+  "publishedAtBuildTime": false,
+  "nativeEvidenceSubjects": [
+    {
+      "label": "first-project",
+      "sourceSha256": "19dc29805b296d2d6e5278603032378ac3675de1056f7f7cbcdf4b59a94eefb1"
+    },
+    {
+      "label": "independent-second-project",
+      "sourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98"
+    }
+  ]
+}

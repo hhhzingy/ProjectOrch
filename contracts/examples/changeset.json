@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-example-2",
+  "projectId": "project-example",
+  "caseId": "case-example",
+  "expectedPlanRevision": 7,
+  "reason": "示例：增加迁移角色，尚未执行",
+  "operations": [
+    {
+      "type": "role.create",
+      "localRef": "migration",
+      "name": "迁移执行者",
+      "charter": "完成指定迁移及验证",
+      "scopePaths": [
+        "migrations"
+      ],
+      "permissionProfileId": "profile-scoped",
+      "permissionProfileRevision": 0
+    },
+    {
+      "type": "task.assign",
+      "taskId": "task-example",
+      "expectedRevision": 2,
+      "roleLocalRef": "migration"
+    }
+  ]
+}

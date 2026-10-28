@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "evidenceId": "ev-example",
+  "caseId": "A001",
+  "status": "NOT_RUN",
+  "kind": "manual",
+  "recordedAt": "2026-10-18T00:00:00Z",
+  "environment": {
+    "os": "example",
+    "node": "example"
+  },
+  "steps": [],
+  "assertions": [],
+  "files": [],
+  "nativeSessionRefs": [],
+  "notes": "结构示例；不代表测试已执行。",
+  "subject": null,
+  "executorId": null,
+  "review": {
+    "status": "PENDING",
+    "reviewerId": null,
+    "report": null,
+    "subjectSha256": null
+  },
+  "applicability": null
+}

@@ -1,0 +1,1026 @@
+{
+  "schemaVersion": 1,
+  "kind": "synthetic_contract_sequence_NOT_APPLICATION_EVIDENCE",
+  "notes": "仅Schema和可调用覆盖；请求顺序不是应用已实现证明。策略权限、字段依赖和内部副作用由A089实际实现测试核验。",
+  "steps": [
+    {
+      "action": "pairing.exchange",
+      "actor": "local_user",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "flow-pair",
+        "oneTimeCode": "SYNTHETIC-NOT-A-SECRET",
+        "challengeId": "synthetic-challenge"
+      },
+      "response": {
+        "requestId": "flow-pair",
+        "status": "paired"
+      }
+    },
+    {
+      "action": "project.create",
+      "actor": "authenticated_user",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "req-project-example",
+        "name": "合成项目",
+        "hostId": "host-example",
+        "rootPath": "C:/ProjectOrchExample",
+        "objective": "验证接力",
+        "initialPolicy": {
+          "id": "policy-example",
+          "revision": 0,
+          "profiles": [
+            {
+              "id": "profile-scoped",
+              "revision": 0,
+              "actions": [
+                "project.read",
+                "role.read",
+                "policy.read_effective",
+                "task.read",
+                "task.create",
+                "task.claim",
+                "task.report_own",
+                "task.submit_own",
+                "task.accept_assigned",
+                "role.startup_ack",
+                "artifact.register_own",
+                "artifact.read",
+                "question.ask",
+                "case.raise",
+                "case.resolve",
+                "workspace.register",
+                "workspace.reserve",
+                "workspace.release",
+                "handover.prepare",
+                "handover.verify",
+                "integration.request",
+                "change.apply"
+              ],
+              "readPaths": [
+                "."
+              ],
+              "writePaths": [
+                "output"
+              ],
+              "roleIds": [],
+              "delegableActions": [],
+              "maxDelegationDepth": 0
+            }
+          ],
+          "limits": {
+            "totalConcurrency": 2,
+            "roleConcurrency": 1,
+            "maxAttempts": 2,
+            "maxCorrectionTurns": 2,
+            "maxManagementRounds": 3,
+            "maxDynamicRoles": 2,
+            "wallTimeMs": 3600000,
+            "costCeiling": null,
+            "costEnforcement": "unavailable"
+          },
+          "nativeMode": "verified_only",
+          "writeIsolation": "exclusive_workspace"
+        }
+      },
+      "response": {
+        "requestId": "req-project-example",
+        "projectId": "project-example",
+        "commandId": "cmd-req-create",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/req-create",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "project",
+            "id": "project-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "role.bootstrap",
+      "actor": "authenticated_user",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-2",
+        "projectId": "project-example",
+        "type": "role.bootstrap",
+        "payload": {
+          "localRef": "lead",
+          "name": "负责人",
+          "charter": "管理受限示例任务",
+          "permissionProfileId": "profile-scoped",
+          "permissionProfileRevision": 0,
+          "expectedPolicyRevision": 0,
+          "sessionRef": {
+            "harnessId": "codex",
+            "hostId": "synthetic-host",
+            "profileId": "synthetic-profile",
+            "nativeConversationId": "synthetic-existing-conversation"
+          }
+        }
+      },
+      "response": {
+        "requestId": "fixture-2",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-2",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-2",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "role",
+            "id": "role-lead",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "management.apply_changes",
+      "actor": "authenticated_user",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "create-reviewer",
+        "projectId": "project-example",
+        "expectedPlanRevision": 0,
+        "reason": "指定独立复核",
+        "operations": [
+          {
+            "type": "role.create",
+            "localRef": "reviewer",
+            "name": "复核者",
+            "charter": "独立复核",
+            "scopePaths": [
+              "."
+            ],
+            "permissionProfileId": "profile-scoped",
+            "permissionProfileRevision": 0
+          }
+        ]
+      },
+      "response": {
+        "requestId": "create-reviewer",
+        "projectId": "project-example",
+        "commandId": "cmd-create-reviewer",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/create-reviewer",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "role",
+            "id": "role-reviewer",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "role.bind",
+      "actor": "authenticated_user",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "flow-role.bind",
+        "projectId": "project-example",
+        "type": "role.bind",
+        "payload": {
+          "roleId": "role-reviewer",
+          "expectedRevision": 0,
+          "sessionRef": {
+            "harnessId": "zcode",
+            "hostId": "synthetic-host",
+            "profileId": "synthetic-profile",
+            "nativeConversationId": "synthetic-review-session"
+          },
+          "handoverId": null
+        }
+      },
+      "response": {
+        "requestId": "flow-role.bind",
+        "projectId": "project-example",
+        "commandId": "cmd-flow-role.bind",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/flow-role.bind",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "binding",
+            "id": "binding-reviewer",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "management.apply_changes",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "create-task",
+        "projectId": "project-example",
+        "expectedPlanRevision": 1,
+        "reason": "制定任务",
+        "operations": [
+          {
+            "type": "task.create",
+            "localRef": "work",
+            "assigneeRoleId": "role-lead",
+            "spec": {
+              "goal": "合成例：汇总整数金额",
+              "inputArtifacts": [],
+              "outputRequirements": [
+                {
+                  "name": "summary",
+                  "kind": "file",
+                  "description": "UTF-8合计结果"
+                }
+              ],
+              "acceptance": [
+                {
+                  "ruleId": "review-total",
+                  "description": "核对金额与格式",
+                  "mode": "designated_reviewer",
+                  "reviewerRoleId": "role-reviewer",
+                  "independent": true
+                }
+              ],
+              "dependencies": []
+            }
+          }
+        ]
+      },
+      "response": {
+        "requestId": "create-task",
+        "projectId": "project-example",
+        "commandId": "cmd-create-task",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/create-task",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "task",
+            "id": "task-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "task.read",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "type": "task.read",
+        "payload": {
+          "taskId": "task-example"
+        }
+      },
+      "response": {
+        "id": "task-example",
+        "projectId": "project-example",
+        "revision": 0,
+        "specRevision": 0,
+        "planRevision": 2,
+        "roleId": "role-lead",
+        "state": "ready",
+        "spec": {
+          "goal": "合成例：汇总整数金额",
+          "inputArtifacts": [],
+          "outputRequirements": [
+            {
+              "name": "summary",
+              "kind": "file",
+              "description": "UTF-8合计结果"
+            }
+          ],
+          "acceptance": [
+            {
+              "ruleId": "review-total",
+              "description": "核对金额与格式",
+              "mode": "designated_reviewer",
+              "reviewerRoleId": "role-reviewer",
+              "independent": true
+            }
+          ],
+          "dependencies": []
+        },
+        "currentAttempt": null,
+        "wait": null,
+        "resultIds": [],
+        "integrationIds": []
+      }
+    },
+    {
+      "action": "workspace.register",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-6",
+        "projectId": "project-example",
+        "type": "workspace.register",
+        "payload": {
+          "localRef": "workspace",
+          "path": "C:/synthetic/project",
+          "kind": "directory",
+          "writePaths": [
+            "output"
+          ],
+          "managed": false
+        }
+      },
+      "response": {
+        "requestId": "fixture-6",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-6",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-6",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "workspace",
+            "id": "workspace-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "workspace.reserve",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-7",
+        "projectId": "project-example",
+        "type": "workspace.reserve",
+        "payload": {
+          "workspaceId": "workspace-example",
+          "expectedRevision": 0,
+          "taskId": "task-example",
+          "taskRevision": 0
+        }
+      },
+      "response": {
+        "requestId": "fixture-7",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-7",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-7",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "workspace",
+            "id": "workspace-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "role.startup_ack",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "flow-role.startup_ack",
+        "projectId": "project-example",
+        "type": "role.startup_ack",
+        "payload": {
+          "roleId": "role-lead",
+          "bindingEpoch": 1,
+          "protocolVersion": 2,
+          "roleRevision": 0,
+          "policyRevision": 0,
+          "planRevision": 2,
+          "taskSpecRevisions": [
+            {
+              "taskId": "task-example",
+              "specRevision": 0
+            }
+          ]
+        }
+      },
+      "response": {
+        "requestId": "flow-role.startup_ack",
+        "projectId": "project-example",
+        "commandId": "cmd-flow-role.startup_ack",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/flow-role.startup_ack",
+        "entityIds": [],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "task.claim",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-8",
+        "projectId": "project-example",
+        "type": "task.claim",
+        "payload": {
+          "taskId": "task-example",
+          "expectedRevision": 0,
+          "expectedSpecRevision": 0
+        }
+      },
+      "response": {
+        "requestId": "fixture-8",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-8",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-8",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "attempt",
+            "id": "attempt-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "question.ask",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-9",
+        "projectId": "project-example",
+        "type": "question.ask",
+        "payload": {
+          "taskId": "task-example",
+          "taskRevision": 0,
+          "attemptId": "attempt-example",
+          "bindingEpoch": 1,
+          "prompt": "确认输出精度",
+          "answerer": {
+            "kind": "user"
+          },
+          "deadline": "2026-10-19T00:00:00Z",
+          "onTimeout": "raise_issue"
+        }
+      },
+      "response": {
+        "requestId": "fixture-9",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-9",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-9",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "question",
+            "id": "question-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "task.report",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "report-wait",
+        "projectId": "project-example",
+        "type": "task.report",
+        "payload": {
+          "taskId": "task-example",
+          "attemptId": "attempt-example",
+          "bindingEpoch": 1,
+          "report": "等待用户选择",
+          "wait": {
+            "target": {
+              "kind": "question",
+              "questionId": "question-example",
+              "questionRevision": 0
+            },
+            "deadline": "2026-10-19T00:00:00Z",
+            "onTimeout": "raise_issue",
+            "taskRevision": 0,
+            "attemptId": "attempt-example",
+            "bindingEpoch": 1
+          }
+        }
+      },
+      "response": {
+        "requestId": "report-wait",
+        "projectId": "project-example",
+        "commandId": "cmd-wait",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/report-wait",
+        "entityIds": [],
+        "error": null,
+        "lastEventSequence": 2
+      }
+    },
+    {
+      "action": "question.answer",
+      "actor": "authenticated_user",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-10",
+        "projectId": "project-example",
+        "type": "question.answer",
+        "payload": {
+          "questionId": "question-example",
+          "expectedRevision": 0,
+          "answer": "使用整数分"
+        }
+      },
+      "response": {
+        "requestId": "fixture-10",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-10",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-10",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "question",
+            "id": "question-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "artifact.register",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-11",
+        "projectId": "project-example",
+        "type": "artifact.register",
+        "payload": {
+          "taskId": "task-example",
+          "kind": "file",
+          "path": "output/total.txt",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "byteSize": 4,
+          "taskRevision": 0
+        }
+      },
+      "response": {
+        "requestId": "fixture-11",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-11",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-11",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "artifact",
+            "id": "artifact-example",
+            "revision": 0,
+            "version": "1"
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "task.submit_result",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-result",
+        "projectId": "project-example",
+        "taskId": "task-example",
+        "taskRevision": 0,
+        "attemptId": "attempt-example",
+        "bindingEpoch": 1,
+        "outcome": "succeeded",
+        "summary": "仅为结构示例，不是实测结果",
+        "outputs": [
+          {
+            "artifactId": "artifact-example",
+            "version": "1",
+            "outputName": "summary"
+          }
+        ],
+        "checks": [],
+        "remainingIssues": []
+      },
+      "response": {
+        "requestId": "fixture-result",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-result",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-result",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "result",
+            "id": "result-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "role.startup_ack",
+      "actor": "designated_reviewer",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "reviewer-startup",
+        "projectId": "project-example",
+        "type": "role.startup_ack",
+        "payload": {
+          "roleId": "role-reviewer",
+          "bindingEpoch": 1,
+          "protocolVersion": 2,
+          "roleRevision": 0,
+          "policyRevision": 0,
+          "planRevision": 2,
+          "taskSpecRevisions": [
+            {
+              "taskId": "task-example",
+              "specRevision": 0
+            }
+          ]
+        }
+      },
+      "response": {
+        "requestId": "reviewer-startup",
+        "projectId": "project-example",
+        "commandId": "cmd-reviewer-startup",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/reviewer-startup",
+        "entityIds": [],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "task.accept",
+      "actor": "designated_reviewer",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-13",
+        "projectId": "project-example",
+        "type": "task.accept",
+        "payload": {
+          "taskId": "task-example",
+          "taskRevision": 0,
+          "resultId": "result-example",
+          "ruleId": "review-total",
+          "decision": "accept",
+          "reason": "已独立核对",
+          "evidenceArtifactIds": [
+            "artifact-example"
+          ]
+        }
+      },
+      "response": {
+        "requestId": "fixture-13",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-13",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-13",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "task",
+            "id": "task-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "issue.raise",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-14",
+        "projectId": "project-example",
+        "type": "issue.raise",
+        "payload": {
+          "taskId": "task-example",
+          "category": "technical",
+          "summary": "合成闭环异常",
+          "evidenceArtifactIds": [
+            "artifact-example"
+          ]
+        }
+      },
+      "response": {
+        "requestId": "fixture-14",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-14",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-14",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "case",
+            "id": "case-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "issue.resolve",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-15",
+        "projectId": "project-example",
+        "type": "issue.resolve",
+        "payload": {
+          "caseId": "case-example",
+          "expectedRevision": 0,
+          "decision": "resolved",
+          "reason": "已核验解除条件",
+          "evidence": [
+            {
+              "artifactId": "artifact-example",
+              "version": "1"
+            }
+          ]
+        }
+      },
+      "response": {
+        "requestId": "fixture-15",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-15",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-15",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "case",
+            "id": "case-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "artifact.register",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "handover-artifact",
+        "projectId": "project-example",
+        "type": "artifact.register",
+        "payload": {
+          "taskId": "task-example",
+          "kind": "report",
+          "path": "output/handover.json",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "byteSize": 256,
+          "taskRevision": 0
+        }
+      },
+      "response": {
+        "requestId": "handover-artifact",
+        "projectId": "project-example",
+        "commandId": "cmd-handover-artifact",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/handover-artifact",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "artifact",
+            "id": "handover-artifact",
+            "revision": 0,
+            "version": "1"
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "handover.prepare",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-16",
+        "projectId": "project-example",
+        "type": "handover.prepare",
+        "payload": {
+          "roleId": "role-lead",
+          "expectedBindingEpoch": 1,
+          "artifact": {
+            "artifactId": "handover-artifact",
+            "version": "1"
+          },
+          "taskSpecRevisions": [
+            {
+              "taskId": "task-example",
+              "specRevision": 0
+            }
+          ],
+          "workspaceVersions": [
+            {
+              "workspaceId": "workspace-example",
+              "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          ],
+          "unresolvedIssueIds": [],
+          "pendingEffects": [],
+          "verifierRoleId": "role-reviewer"
+        }
+      },
+      "response": {
+        "requestId": "fixture-16",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-16",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-16",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "handover",
+            "id": "handover-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "handover.verify",
+      "actor": "designated_reviewer",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-17",
+        "projectId": "project-example",
+        "type": "handover.verify",
+        "payload": {
+          "handoverId": "handover-example",
+          "expectedRevision": 0,
+          "decision": "verified",
+          "evidence": [
+            {
+              "artifactId": "artifact-example",
+              "version": "1"
+            }
+          ]
+        }
+      },
+      "response": {
+        "requestId": "fixture-17",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-17",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-17",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "handover",
+            "id": "handover-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "check.register",
+      "actor": "authenticated_user",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "flow-check.register",
+        "projectId": "project-example",
+        "type": "check.register",
+        "payload": {
+          "definition": {
+            "id": "total-check",
+            "version": "1",
+            "runner": "registered_validator",
+            "entryId": "builtin.integer-sum",
+            "entrySha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "parameterSchemaId": "builtin.integer-sum.params.v1",
+            "timeoutMs": 1000,
+            "permissions": [
+              "artifact.read"
+            ],
+            "scopePaths": [
+              "output"
+            ],
+            "enabled": true
+          }
+        }
+      },
+      "response": {
+        "requestId": "flow-check.register",
+        "projectId": "project-example",
+        "commandId": "cmd-flow-check.register",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/flow-check.register",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "check",
+            "id": "total-check",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    },
+    {
+      "action": "integration.request",
+      "actor": "authorized_role",
+      "request": {
+        "schemaVersion": 2,
+        "requestId": "fixture-18",
+        "projectId": "project-example",
+        "type": "integration.request",
+        "payload": {
+          "taskId": "task-example",
+          "taskRevision": 0,
+          "targetWorkspaceId": "workspace-example",
+          "targetVersion": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "artifacts": [
+            {
+              "artifactId": "artifact-example",
+              "version": "1"
+            }
+          ],
+          "checkRefs": [
+            {
+              "id": "total-check",
+              "version": "1"
+            }
+          ]
+        }
+      },
+      "response": {
+        "requestId": "fixture-18",
+        "projectId": "project-example",
+        "commandId": "cmd-fixture-18",
+        "status": "completed",
+        "receiptUrl": "/api/v1/receipts/fixture-18",
+        "entityIds": [
+          {
+            "localRef": "created",
+            "entityType": "integration",
+            "id": "integration-example",
+            "revision": 0,
+            "version": null
+          }
+        ],
+        "error": null,
+        "lastEventSequence": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/error.schema.json",
+  "title": "ProjectOrch error.schema.json",
+  "type": "object",
+  "properties": {
+    "error": {
+      "$ref": "#/$defs/detail"
+    }
+  },
+  "required": [
+    "error"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "detail": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "UNAUTHENTICATED",
+            "FORBIDDEN",
+            "NOT_FOUND",
+            "REVISION_CONFLICT",
+            "IDEMPOTENCY_CONFLICT",
+            "INVALID_STATE",
+            "DEPENDENCY_CYCLE",
+            "NATIVE_TARGET_CHANGED",
+            "CAPABILITY_UNSUPPORTED",
+            "ADAPTER_OFFLINE",
+            "DELIVERY_UNCERTAIN",
+            "BUDGET_EXCEEDED",
+            "VALIDATION_ERROR",
+            "INTERNAL_ERROR",
+            "STALE_SPEC",
+            "STALE_WAIT",
+            "DISPATCH_HELD",
+            "WORKSPACE_CONFLICT",
+            "CHECK_UNAVAILABLE",
+            "REVIEW_REQUIRED"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "requestId",
+        "retryable"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

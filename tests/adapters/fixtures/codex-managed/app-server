@@ -1,0 +1,34 @@
+// 合成JSONL宿主；只用于适配器状态机测试，不是官方Harness或验收证据。
+import readline from 'node:readline';
+import fs from 'node:fs';
+const lines = readline.createInterface({ input: process.stdin });
+const mode = process.env.SYNTHETIC_MODE;
+const emit = v => process.stdout.write(JSON.stringify(v) + '\n');
+let turnNo = 0;
+lines.on('line', line => {
+  const f = JSON.parse(line);
+  if (!f.id) return;
+  if (process.env.SYNTHETIC_LOG) fs.appendFileSync(process.env.SYNTHETIC_LOG, f.method + '\n');
+  let result = {};
+  if (f.method === 'thread/start' || f.method === 'thread/resume') result = { thread: { id: mode === 'resume-mismatch' ? 'other-thread' : f.params.threadId ?? 'synthetic-thread', turns: [], status: { type: mode === 'resume-active' ? 'active' : 'idle' } } };
+  if (f.method === 'turn/start') {
+    if (mode === 'no-start-reply') return;
+    const id = 'turn-' + (++turnNo);
+    if (mode === 'reject-start') { emit({ id: f.id, error: { code: 409, message: 'synthetic rejected' } }); return; }
+    result = { turn: { id } };
+    if(['usage-limit','private-failure'].includes(mode)){
+      emit({method:'turn/completed',params:{threadId:'synthetic-thread',turn:{id,status:'failed',error:{message:'SECRET path/account usage limit exceeded',codexErrorInfo:mode==='usage-limit'?'usageLimitExceeded':'other',additionalDetails:'SECRET'}}}});
+      emit({id:f.id,result});return;
+    }
+    emit({ method: 'turn/started', params: { threadId: 'synthetic-thread', turn: { id } } });
+    if (!['quiet', 'reconcile', 'history-mismatch', 'interrupt-terminal'].includes(mode)) {
+      emit({ method: 'item/agentMessage/delta', params: { threadId: 'synthetic-thread', turnId: id, delta: 'SYNTHETIC_OK' } });
+      emit({ method: 'turn/completed', params: { threadId: mode === 'wrong-terminal' ? 'other-thread' : 'synthetic-thread', turn: { id, status: 'completed' } } });
+    }
+  }
+  if (f.method === 'turn/interrupt' && mode === 'interrupt-terminal') emit({ method: 'turn/completed', params: { threadId: 'synthetic-thread', turn: { id: f.params.turnId, status: 'interrupted' } } });
+  if (f.method === 'thread/read') result = { thread: { id: mode === 'history-mismatch' ? 'other-thread' : 'synthetic-thread', turns: turnNo ? [{ id: 'turn-' + turnNo, status: mode === 'reconcile' ? 'completed' : 'inProgress' }] : [] } };
+  if (f.method === 'mcpServer/tool/call') result = { isError: true, content: [{ text: '{"roleId":"untrusted"}' }] };
+  emit({ id: f.id, result });
+});
+lines.on('close', () => process.exit(0));

@@ -1,0 +1,14 @@
+{
+  "_comment": "T110/T122：ZCode MCP 服务器配置样例（实测合同）。官方 CLI 不加载 mcpServers 数组形式——必须写入会话工作区的 .zcode/config.json，顶层 mcp.servers 对象格式；headers 用对象（非数组）。url/Authorization 由内核受信启动器（injectToolEntry）在创建/绑定时写入会话工作区，端口与令牌随内核启动变化，勿手抄过期值。不要把令牌提交到任何公开仓库。",
+  "mcp": {
+    "servers": {
+      "projectorch": {
+        "type": "http",
+        "url": "http://127.0.0.1:<PORT>/mcp",
+        "headers": {
+          "Authorization": "Bearer projectorch-<TOKEN>"
+        }
+      }
+    }
+  }
+}

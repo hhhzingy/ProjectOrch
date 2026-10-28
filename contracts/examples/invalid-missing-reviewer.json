@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-revise",
+  "projectId": "project-example",
+  "expectedPlanRevision": 7,
+  "reason": "调整验收规格",
+  "operations": [
+    {
+      "type": "task.spec.revise",
+      "taskId": "task-example",
+      "expectedRevision": 4,
+      "expectedSpecRevision": 0,
+      "spec": {
+        "goal": "合成例：汇总整数金额",
+        "inputArtifacts": [],
+        "outputRequirements": [
+          {
+            "name": "summary",
+            "kind": "file",
+            "description": "UTF-8合计结果"
+          }
+        ],
+        "acceptance": [
+          {
+            "ruleId": "review-total",
+            "description": "核对金额与格式",
+            "mode": "designated_reviewer",
+            "independent": true
+          }
+        ],
+        "dependencies": []
+      },
+      "affectedTaskIds": [
+        "task-next"
+      ],
+      "inFlightPolicy": "finish_stale",
+      "outputReuse": "revalidate_only",
+      "reason": "新增输出要求"
+    }
+  ]
+}

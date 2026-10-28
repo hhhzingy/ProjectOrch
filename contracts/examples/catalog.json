@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "examples": [
+    {
+      "path": "contracts/examples/message.json",
+      "schema": "contracts/schemas/message.schema.json",
+      "valid": true,
+      "reason": "仅检验结构；业务授权与真实证据另行验证"
+    },
+    {
+      "path": "contracts/examples/changeset.json",
+      "schema": "contracts/schemas/changeset.schema.json",
+      "valid": true,
+      "reason": "仅检验结构；业务授权与真实证据另行验证"
+    },
+    {
+      "path": "contracts/examples/result.json",
+      "schema": "contracts/schemas/result.schema.json",
+      "valid": true,
+      "reason": "仅检验结构；业务授权与真实证据另行验证"
+    },
+    {
+      "path": "contracts/examples/capabilities.json",
+      "schema": "contracts/schemas/capabilities.schema.json",
+      "valid": true,
+      "reason": "仅检验结构；业务授权与真实证据另行验证"
+    },
+    {
+      "path": "contracts/examples/command.json",
+      "schema": "contracts/schemas/command.schema.json",
+      "valid": true,
+      "reason": "仅检验结构；业务授权与真实证据另行验证"
+    },
+    {
+      "path": "contracts/examples/event.json",
+      "schema": "contracts/schemas/event.schema.json",
+      "valid": true,
+      "reason": "仅检验结构；业务授权与真实证据另行验证"
+    },
+    {
+      "path": "contracts/examples/evidence.json",
+      "schema": "contracts/schemas/evidence.schema.json",
+      "valid": true,
+      "reason": "仅检验结构；业务授权与真实证据另行验证"
+    },
+    {
+      "path": "contracts/examples/project-create.json",
+      "schema": "contracts/schemas/project-create.schema.json",
+      "valid": true,
+      "reason": "路径授权和唯一性由服务检查"
+    },
+    {
+      "path": "contracts/examples/approval.json",
+      "schema": "contracts/schemas/approval.schema.json",
+      "valid": true,
+      "reason": "示例拒绝；实际操作需匹配原生请求"
+    },
+    {
+      "path": "contracts/examples/invalid-spoof-source.json",
+      "schema": "contracts/schemas/message.schema.json",
+      "valid": false,
+      "reason": "拒绝客户端注入可信来源字段"
+    },
+    {
+      "path": "contracts/examples/invalid-steer-target.json",
+      "schema": "contracts/schemas/message.schema.json",
+      "valid": false,
+      "reason": "引导缺少目标执行和绑定代次"
+    },
+    {
+      "path": "contracts/examples/invalid-success-no-output.json",
+      "schema": "contracts/schemas/result.schema.json",
+      "valid": false,
+      "reason": "成功结果必须含成果引用"
+    },
+    {
+      "path": "contracts/examples/invalid-management-action.json",
+      "schema": "contracts/schemas/changeset.schema.json",
+      "valid": false,
+      "reason": "未知管理操作禁止"
+    },
+    {
+      "path": "contracts/examples/invalid-capability-proof.json",
+      "schema": "contracts/schemas/capabilities.schema.json",
+      "valid": false,
+      "reason": "verified需要证据引用"
+    },
+    {
+      "path": "contracts/examples/invalid-protocol-version.json",
+      "schema": "contracts/schemas/message.schema.json",
+      "valid": false,
+      "reason": "未经协商版本拒绝"
+    },
+    {
+      "path": "contracts/examples/invalid-answer-reference.json",
+      "schema": "contracts/schemas/message.schema.json",
+      "valid": false,
+      "reason": "回答必须明确关联问题消息"
+    },
+    {
+      "path": "contracts/examples/artifact-git.json",
+      "schema": "contracts/schemas/command.schema.json",
+      "valid": true,
+      "reason": "Git成果使用仓库与明确提交，不冒充文件哈希"
+    },
+    {
+      "path": "contracts/examples/invalid-git-artifact.json",
+      "schema": "contracts/schemas/command.schema.json",
+      "valid": false,
+      "reason": "Git提交不能用含糊文件路径登记"
+    },
+    {
+      "path": "contracts/examples/invalid-task-assignee.json",
+      "schema": "contracts/schemas/changeset.schema.json",
+      "valid": false,
+      "reason": "两个互斥负责人字段不得同时出现"
+    },
+    {
+      "path": "contracts/examples/task-revision.json",
+      "schema": "contracts/schemas/changeset.schema.json",
+      "valid": true,
+      "reason": "v2修订正反例；非实际验收记录"
+    },
+    {
+      "path": "contracts/examples/invalid-missing-reviewer.json",
+      "schema": "contracts/schemas/changeset.schema.json",
+      "valid": false,
+      "reason": "v2修订正反例；非实际验收记录"
+    },
+    {
+      "path": "contracts/examples/typed-wait.json",
+      "schema": "contracts/schemas/command.schema.json",
+      "valid": true,
+      "reason": "v2修订正反例；非实际验收记录"
+    },
+    {
+      "path": "contracts/examples/artifact-chunk-empty.json",
+      "schema": "contracts/schemas/artifact-chunk.schema.json",
+      "valid": true,
+      "reason": "合成分片结构正反例，不是真实成果验收"
+    },
+    {
+      "path": "contracts/examples/artifact-chunk-binary.json",
+      "schema": "contracts/schemas/artifact-chunk.schema.json",
+      "valid": true,
+      "reason": "合成分片结构正反例，不是真实成果验收"
+    },
+    {
+      "path": "contracts/examples/invalid-artifact-chunk-encoding.json",
+      "schema": "contracts/schemas/artifact-chunk.schema.json",
+      "valid": false,
+      "reason": "合成分片结构正反例，不是真实成果验收"
+    },
+    {
+      "reason": "合成结构样本，不代表原生执行或完整准入",
+      "valid": true,
+      "schema": "contracts/schemas/task-readiness.schema.json",
+      "path": "contracts/examples/task-readiness.json"
+    },
+    {
+      "reason": "拒绝未定义阻塞原因，不得假定原生完成",
+      "valid": false,
+      "schema": "contracts/schemas/task-readiness.schema.json",
+      "path": "contracts/examples/invalid-task-readiness.json"
+    }
+  ]
+}

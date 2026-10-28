@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/common.schema.json",
+  "title": "ProjectOrch common.schema.json",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sessionRef": {
+      "type": "object",
+      "properties": {
+        "harnessId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "hostId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "profileId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "nativeConversationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "nativeWorkspaceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "harnessId",
+        "hostId",
+        "profileId",
+        "nativeConversationId"
+      ],
+      "additionalProperties": false
+    },
+    "artifactRef": {
+      "type": "object",
+      "properties": {
+        "artifactId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "artifactId",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

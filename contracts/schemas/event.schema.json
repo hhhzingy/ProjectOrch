@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/event.schema.json",
+  "title": "ProjectOrch event.schema.json",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "eventId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "role.changed",
+        "binding.changed",
+        "task.changed",
+        "attempt.changed",
+        "message.changed",
+        "case.changed",
+        "changeset.changed",
+        "native.item.changed",
+        "native.status.changed",
+        "native.history.reset",
+        "approval.changed",
+        "capability.changed",
+        "question.changed",
+        "wait.changed",
+        "goal.hold.changed",
+        "workspace.changed",
+        "handover.changed",
+        "integration.changed",
+        "guard.denied",
+        "role.protocol.violation"
+      ]
+    },
+    "entityId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "entityRevision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "causationId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Source"
+    },
+    "data": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "sequence",
+    "projectId",
+    "occurredAt",
+    "type",
+    "entityId",
+    "entityRevision",
+    "causationId",
+    "source",
+    "data"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "question.changed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Question"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "goal.hold.changed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/GoalHold"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "workspace.changed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Workspace"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "handover.changed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Handover"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "integration.changed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Integration"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "wait.changed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "waitId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "wait": {
+                "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/Wait"
+              },
+              "state": {
+                "enum": [
+                  "waiting",
+                  "resolved",
+                  "expired",
+                  "cancelled",
+                  "stale"
+                ]
+              }
+            },
+            "required": [
+              "waitId",
+              "wait",
+              "state"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

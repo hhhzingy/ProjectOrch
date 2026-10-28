@@ -1,0 +1,10 @@
+node_modules/
+work/
+outputs/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+*.sqlite*
+reports/
+native-config.json

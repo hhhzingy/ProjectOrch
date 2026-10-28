@@ -1,0 +1,41 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
+    "paths": {
+      "@projectorch/runtime": [
+        "./packages/runtime/src/index.ts"
+      ],
+      "@projectorch/adapter-contract": [
+        "./packages/adapter-contract/src/session-ref.ts"
+      ],
+      "@projectorch/adapter-contract/events": [
+        "./packages/adapter-contract/src/events.ts"
+      ],
+      "@projectorch/contracts": [
+        "./packages/contracts/src/index.ts"
+      ],
+      "@projectorch/persistence": [
+        "./packages/persistence/src/index.ts"
+      ],
+      "@projectorch/persistence/commands": [
+        "./packages/persistence/src/commands/index.ts"
+      ],
+      "@projectorch/persistence/outbox": [
+        "./packages/persistence/src/outbox/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "apps/*/src/**/*.ts",
+    "packages/*/src/**/*.ts",
+    "tests/contracts/types.test.ts"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@projectorch/adapter-contract",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/session-ref.d.ts",
+      "import": "./dist/session-ref.js"
+    },
+    "./events": {
+      "types": "./dist/events.d.ts",
+      "import": "./dist/events.js"
+    }
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hhhzingy/ProjectOrch"
+  }
+}

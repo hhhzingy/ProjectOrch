@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "eventId": "evt-example",
+  "sequence": 1,
+  "projectId": "project-example",
+  "occurredAt": "2026-10-18T00:00:00Z",
+  "type": "task.changed",
+  "entityId": "task-example",
+  "entityRevision": 1,
+  "causationId": "req-example-4",
+  "source": {
+    "kind": "kernel",
+    "principalId": "synthetic-kernel",
+    "originCommandId": null,
+    "sessionRef": null
+  },
+  "data": {
+    "state": "active"
+  }
+}

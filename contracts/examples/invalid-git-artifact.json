@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-artifact-example",
+  "projectId": "project-example",
+  "type": "artifact.register",
+  "payload": {
+    "taskId": "task-example",
+    "kind": "git_commit",
+    "path": "C:/ProjectOrchExample",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "byteSize": 0,
+    "taskRevision": 0
+  }
+}

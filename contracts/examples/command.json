@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-example-4",
+  "projectId": "project-example",
+  "type": "task.claim",
+  "payload": {
+    "taskId": "task-example",
+    "expectedRevision": 0,
+    "expectedSpecRevision": 0
+  }
+}

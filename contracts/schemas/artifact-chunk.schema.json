@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/artifact-chunk.schema.json",
+  "title": "ProjectOrch成果内容分片",
+  "type": "object",
+  "$ref": "https://projectorch.invalid/schemas/domain.schema.json#/$defs/ArtifactChunk"
+}

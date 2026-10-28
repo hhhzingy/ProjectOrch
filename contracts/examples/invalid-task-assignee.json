@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-example-2",
+  "projectId": "project-example",
+  "caseId": "case-example",
+  "expectedPlanRevision": 7,
+  "reason": "示例：增加迁移角色，尚未执行",
+  "operations": [
+    {
+      "type": "task.create",
+      "localRef": "bad",
+      "assigneeRoleId": "role-a",
+      "assigneeLocalRef": "role-b",
+      "spec": {
+        "goal": "合成例：汇总整数金额",
+        "inputArtifacts": [],
+        "outputRequirements": [
+          {
+            "name": "summary",
+            "kind": "file",
+            "description": "UTF-8合计结果"
+          }
+        ],
+        "acceptance": [
+          {
+            "ruleId": "review-total",
+            "description": "核对金额与格式",
+            "mode": "designated_reviewer",
+            "reviewerRoleId": "role-reviewer",
+            "independent": true
+          }
+        ],
+        "dependencies": []
+      }
+    }
+  ]
+}

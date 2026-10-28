@@ -1,0 +1,20 @@
+# T110（PR2-W1）：Codex MCP 配置样例（官方 [mcp_servers.<name>] TOML 形式，不可用 ZCode 的 JSON 形式互抄）。
+# 字段为 codex 官方合同（二进制实证：http_headers/bearer_token_env_var）；url 由受信启动器从内核运行时 mcpEntrypoint 写入。
+# 令牌经环境变量引用（bearer_token_env_var）——不在 config.toml 明文落盘；受信启动器负责在同用户会话注入该变量。
+# 不要把令牌或本文件内容提交到任何公开仓库。
+
+[mcp_servers.projectorch]
+url = "http://127.0.0.1:<PORT>/mcp"
+bearer_token_env_var = "PROJECTORCH_CONTROL_TOKEN"
+
+# 备选（需要静态头时；仍不建议明文令牌）：
+# [mcp_servers.projectorch.http_headers]
+# Authorization = "Bearer projectorch-<TOKEN>"
+
+# 稳定入口备选：内核重启换端口后，stdio桥从ProjectOrch自有发现文件取最新地址。
+# 与上方HTTP入口二选一；路径换为实际已安装位置，不把开发机路径当分发包依赖。
+# [mcp_servers.projectorch]
+# command = "C:/实际运行时/node.exe"
+# args = ["E:/实际安装目录/scripts/mcp-control-bridge.mjs", "--data-dir", "C:/实际ProjectOrch数据目录"]
+# 该入口仅代理受信控制主体，不能证明当前发起聊天的原生身份。
+# 它不会修改Codex配置/登录文件或在内核停机时自动重发写请求。

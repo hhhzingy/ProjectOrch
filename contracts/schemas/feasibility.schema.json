@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/feasibility.schema.json",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "harnessId": {
+      "type": "string",
+      "enum": [
+        "codex",
+        "zcode"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "NOT_STARTED",
+        "INVESTIGATING",
+        "CONCLUDED"
+      ]
+    },
+    "conclusion": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "FEASIBLE",
+        "INFEASIBLE",
+        "INCONCLUSIVE"
+      ]
+    },
+    "ownerId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "investigationBudget": {
+      "type": "object",
+      "properties": {
+        "maxRoutes": {
+          "const": 3
+        },
+        "maxHours": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 40
+        }
+      },
+      "required": [
+        "maxRoutes",
+        "maxHours"
+      ],
+      "additionalProperties": false
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "supported_entry",
+              "supported_extension",
+              "maintained_bridge"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NOT_TRIED",
+              "SUPPORTED",
+              "FAILED",
+              "BLOCKED"
+            ]
+          },
+          "evidenceFiles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maintenanceCost": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "kind",
+          "status",
+          "evidenceFiles",
+          "reason",
+          "maintenanceCost"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 3
+    },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "backend_entry",
+              "existing_session_tools",
+              "trusted_identity",
+              "dual_end_race",
+              "recovery",
+              "bridge_distribution"
+            ]
+          },
+          "conclusion": {
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "SUPPORTED",
+              "UNSUPPORTED",
+              "BLOCKED"
+            ]
+          },
+          "evidenceFiles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name",
+          "conclusion",
+          "evidenceFiles",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 6,
+      "maxItems": 128
+    },
+    "decisionReport": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "review": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "reviewerId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "decision": {
+              "const": "APPROVED"
+            },
+            "report": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "reviewerId",
+            "decision",
+            "report"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nextAction": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "harnessId",
+    "status",
+    "conclusion",
+    "ownerId",
+    "investigationBudget",
+    "routes",
+    "dimensions",
+    "decisionReport",
+    "review",
+    "nextAction"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "CONCLUDED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "conclusion": {
+            "type": "string",
+            "enum": [
+              "FEASIBLE",
+              "INFEASIBLE",
+              "INCONCLUSIVE"
+            ]
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decisionReport": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "review": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "decisionReport",
+          "review"
+        ]
+      }
+    }
+  ]
+}

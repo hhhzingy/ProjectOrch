@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-example-1",
+  "projectId": "project-example",
+  "toRoleId": "role-backend",
+  "kind": "question",
+  "body": "示例数据：接口v2是否已经验收？",
+  "delivery": {
+    "mode": "when_available",
+    "priority": "normal"
+  },
+  "fromRoleId": "admin"
+}

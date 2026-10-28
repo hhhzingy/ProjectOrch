@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/task-readiness.schema.json",
+  "title": "ProjectOrch任务依赖与规格待重核快照",
+  "type": "object",
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "taskId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "projectId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "specRevision": { "type": "integer", "minimum": 0 },
+    "planRevision": { "type": "integer", "minimum": 0 },
+    "userPaused": { "type": "boolean" },
+    "dependencyReady": { "type": "boolean" },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "taskId": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "requiredRevision": { "type": "integer", "minimum": 0 },
+          "currentRevision": { "type": ["integer", "null"], "minimum": 0 },
+          "reason": { "enum": ["TASK_SPEC_REVALIDATION_REQUIRED", "PREREQ_NOT_FOUND", "PREREQ_SPEC_MISMATCH", "PREREQ_CANCELLED", "PREREQ_NOT_ACCEPTED", "PREREQ_OUTPUT_NAME_MISSING", "PREREQ_NO_ARTIFACT", "PREREQ_CONDITION_UNSUPPORTED"] }
+        },
+        "required": ["taskId", "requiredRevision", "currentRevision", "reason"],
+        "additionalProperties": false
+      }
+    },
+    "unresolvedAttempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "attemptId": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "specRevision": { "type": "integer", "minimum": 0 },
+          "state": { "enum": ["dispatching", "running", "waiting_input", "unknown"] }
+        },
+        "required": ["attemptId", "specRevision", "state"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["schemaVersion", "taskId", "projectId", "revision", "specRevision", "planRevision", "userPaused", "dependencyReady", "blocks", "unresolvedAttempts"],
+  "additionalProperties": false
+}

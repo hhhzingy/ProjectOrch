@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ProjectOrch · 本地控制台</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; background: #101418; color: #d8dee6; }
+    header { padding: 12px 20px; background: #161b22; border-bottom: 1px solid #2a313b; display: flex; align-items: baseline; gap: 16px; }
+    h1 { font-size: 16px; margin: 0; }
+    #connection-status { font-size: 13px; color: #8ba1c7; }
+    #layout { display: grid; grid-template-columns: 260px 340px 1fr; gap: 12px; padding: 12px 16px; align-items: start; }
+    section { background: #161b22; border: 1px solid #2a313b; border-radius: 6px; padding: 12px 14px; min-height: 80px; }
+    #layout section { min-width: 0; max-height: 220px; overflow: auto; }
+    #layout section:has(#role-detail:empty) { display: none; }
+    summary { cursor: pointer; color: #8ba1c7; }
+    details.setup { background: #161b22; border: 1px solid #2a313b; border-radius: 6px; padding: 12px 14px; }
+    h2 { font-size: 13px; margin: 0 0 8px; color: #8ba1c7; }
+    h3 { font-size: 12px; margin: 0 0 8px; color: #8ba1c7; }
+    .nav-item { display: block; width: 100%; text-align: left; background: #0d1117; color: #d8dee6; border: 1px solid #2a313b; border-radius: 4px; padding: 8px 10px; font-size: 13px; margin-bottom: 6px; cursor: pointer; }
+    .nav-item:hover { border-color: #4a6da7; }
+    .nav-item.selected { border-color: #4a6da7; background: #16202e; }
+    .nav-item.selected::before { content: "▸ "; }
+    .state-desired { color: #8ba1c7; }
+    .state-observed { color: #7ec699; }
+    #role-detail div { font-family: Consolas, monospace; font-size: 12px; padding: 2px 0; }
+    #role-detail pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+    #role-detail article { margin-top: 12px; border-top: 1px solid #2a313b; padding-top: 8px; }
+    #layout section[aria-label="角色详情"] { max-height: 65vh; }
+    .setup { margin: 12px 16px; min-height: auto; max-width: 760px; }
+    label { display: block; margin: 10px 0 4px; }
+    input, textarea, select { box-sizing: border-box; width: 100%; padding: 8px; background: #0d1117; color: #d8dee6; border: 1px solid #586576; border-radius: 4px; font: inherit; }
+    #management-panel { margin: 16px; min-height: auto; }
+    #management-panel section { overflow-x: auto; min-height: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid #2a313b; overflow-wrap: anywhere; max-width: 230px; }
+    #management-panel fieldset { border: 1px solid #586576; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+    #management-panel article { margin: 16px 0; border-top: 1px solid #586576; }
+    .task-review { margin: 12px 0; }
+    #management-panel .task-review fieldset { display: block; }
+    .task-review label { overflow-wrap: anywhere; }
+    .task-review input[type=checkbox] { width: auto; margin-right: 8px; }
+    #team-confirm { width: auto; }
+    .task-review textarea, .task-review select { display: block; margin: 8px 0; }
+    .artifact-viewer pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; }
+    .compact-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .compact-actions button { margin-top: 0; }
+    button[type=submit] { margin-top: 12px; padding: 8px 16px; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .6; }
+    :focus-visible { outline: 2px solid #9cc5ff; outline-offset: 3px; }
+    #feedback { margin: 12px 20px; }
+    @media(max-width: 900px) { #layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ProjectOrch 本地控制台</h1>
+    <span id="connection-status">○ 连接中…</span>
+  </header>
+  <p id="feedback" role="status" aria-live="polite"></p>
+  <section id="pair-panel" class="setup" aria-label="首次配对">
+    <h2>连接本机控制台</h2>
+    <p>从本机启动终端取得一次性配对信息。代码两分钟有效，请勿分享。</p>
+    <form id="pair-form" method="post">
+      <label for="pair-id">配对编号（challengeId）</label><input id="pair-id" required maxlength="128" autocomplete="off">
+      <label for="pair-code">一次性代码（oneTimeCode）</label><input id="pair-code" type="password" required maxlength="128" autocomplete="one-time-code">
+      <button id="pair-submit" type="submit">配对</button>
+    </form>
+  </section>
+  <main id="layout">
+    <section aria-label="项目导航">
+      <h2>项目</h2>
+      <div id="project-list"></div>
+    </section>
+    <section aria-label="角色与状态">
+      <h2 id="scope-heading">角色 —（未选择项目）</h2>
+      <div id="role-list"></div>
+    </section>
+    <section aria-label="角色详情">
+      <div id="role-detail"></div>
+    </section>
+  </main>
+  <section id="management-panel" aria-label="项目管理"><p>选择项目后可管理角色与任务。</p></section>
+  <details id="create-panel" class="setup" aria-label="创建项目" hidden>
+    <summary>新建项目</summary>
+    <p>先配置并登录官方Harness，再创建协作项目。默认仅手动管理；三角色模板需显式确认。创建项目本身不调用模型。</p>
+    <form id="create-form" method="post">
+      <label for="project-name">项目名称</label><input id="project-name" required maxlength="256">
+      <label for="project-root">本机项目目录（例如 E:\MyProject）</label><input id="project-root" required maxlength="2048" autocomplete="off">
+      <label for="project-objective">项目目标</label><textarea id="project-objective" required maxlength="2048" rows="3"></textarea>
+      <label for="project-template">工作方式</label><select id="project-template"><option value="manual">手动登记（不启用原生执行）</option><option value="alpha-three-role">三角色协作：负责人Codex / 执行ZCode / 复核Codex</option></select>
+      <label><input id="team-confirm" type="checkbox">选择三角色时，我授权新项目内读写与默认模型调用：总并发1、每任务最多3尝试/2返工、执行时限1小时、无可验证金额上限；不授权扩大预算/权限。原生配置和版本校验仍须通过。</label>
+      <button id="create-submit" type="submit">创建项目</button>
+    </form>
+    <div id="team-next" hidden><h3>在已连接的Harness对话中启动</h3><p>复制以下指令到已配置ProjectOrch MCP的对话。控制入口不等于该对话已成为负责人；模板会新建三个受管会话。首次启动会消耗模型额度。该指令目前是Alpha开发入口，完整真实闭环待验。</p><textarea id="team-instructions" readonly rows="12" aria-label="三角色启动指令"></textarea></div>
+  </details>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

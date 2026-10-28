@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-project-example",
+  "name": "合成项目",
+  "hostId": "host-example",
+  "rootPath": "C:/ProjectOrchExample",
+  "objective": "验证接力",
+  "initialPolicy": {
+    "id": "policy-example",
+    "revision": 0,
+    "profiles": [
+      {
+        "id": "profile-scoped",
+        "revision": 0,
+        "actions": [
+          "project.read",
+          "task.claim"
+        ],
+        "readPaths": [
+          "."
+        ],
+        "writePaths": [
+          "src"
+        ],
+        "roleIds": [],
+        "delegableActions": [],
+        "maxDelegationDepth": 0
+      }
+    ],
+    "limits": {
+      "totalConcurrency": 2,
+      "roleConcurrency": 1,
+      "maxAttempts": 2,
+      "maxCorrectionTurns": 2,
+      "maxManagementRounds": 3,
+      "maxDynamicRoles": 2,
+      "wallTimeMs": 3600000,
+      "costCeiling": null,
+      "costEnforcement": "unavailable"
+    },
+    "nativeMode": "disabled",
+    "writeIsolation": "exclusive_workspace"
+  }
+}

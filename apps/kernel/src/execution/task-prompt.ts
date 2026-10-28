@@ -1,0 +1,8 @@
+/** 受信协调器的完整冻结输入；不把任务目标当成全部规格，不猜工具返回ID。 */
+export function taskExecutionPrompt(input: unknown): string {
+  const context = input as { readonly spec?: { readonly goal?: unknown } } | null;
+  if (!context || typeof context.spec?.goal !== 'string' || !context.spec.goal.trim()) throw new Error('INVALID_TASK_EXECUTION_INPUT');
+  const prompt = `你是当前绑定的任务执行角色。下面是内核冻结的执行规格，包含项目/角色/任务标识、规格版本、输入成果、具名输出及验收规则。按完整规格工作，不自行改变权限、预算、角色、验收规则或用户暂停。\n\n${JSON.stringify(input)}\n\n先用 projectorch_task_read 读取当前任务及 currentAttempt。若任务state是draft或ready，必须先由你调用 projectorch_task_claim，参数为requestId（唯一幂等键）、taskId（实际任务ID）、expectedRevision（刚读到的顶层实体revision）、expectedSpecRevision（刚读到的specRevision）；成功后再task.read核对状态及当前尝试。原生attempt已经running不代表业务任务已领取。若任务已active或waiting，不重复领取。即使规格要求先问问题，也必须先完成上述领取，再question.ask；不能在draft状态直接提问、登记成果或提交结果。领取失败先核对真实错误和当前版本，不伪造领取成功。question.ask必须返回业务成功及真实questionId后才用task.report.wait保存等待；工具传输completed不等于业务成功，错误时不编造questionId。\n提交和提问的taskRevision使用specRevision/currentAttempt.taskRevision，不能使用顶层实体revision；attemptId使用currentAttempt.id，bindingEpoch取当前身份/尝试。产物pathRef/path的持久基准始终是项目根，不是本会话cwd。冻结输入artifactContext.workspaceRelativeToProjectRoot是当前工作区相对项目根的精确前缀：在cwd写report.md后，登记路径必须为此前缀/report.md（前缀为.时直接report.md）；不能把短文件名当项目根路径，也不能搜索其他工作区同名文件。登记前核对实际文件sha256和byteSize，登记/提交错误应按真实路径修正，不能仅靠另登记引用掩盖已提交错误结果。实际产物按工具Schema登记，再用 projectorch_task_submit_result 提交属于当前尝试的结果，严格按工具Schema包含全部必填字段，尤其是 checks、remainingIssues（没有条目时为空数组）和具名 outputs。使用工具返回的成果ID与version，不编造引用。失败或权限/工具不可用时如实报告，不走其他身份或新建替代会话。结果提交并不表示复核通过。`;
+  if (Buffer.byteLength(prompt) > 64000) throw new Error('TASK_EXECUTION_INPUT_TOO_LARGE');
+  return prompt;
+}

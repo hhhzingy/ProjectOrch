@@ -1,0 +1,27 @@
+CREATE TABLE execution_dispatches (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  request_key TEXT NOT NULL,
+  request_hash TEXT NOT NULL,
+  task_id TEXT NOT NULL,
+  task_revision INTEGER NOT NULL,
+  attempt_id TEXT NOT NULL UNIQUE,
+  binding_id TEXT NOT NULL,
+  binding_epoch INTEGER NOT NULL,
+  workspace_id TEXT NOT NULL,
+  workspace_fence INTEGER NOT NULL,
+  owner_key TEXT NOT NULL,
+  fence INTEGER NOT NULL DEFAULT 1 CHECK(fence>=1),
+  driver_owner_key TEXT NOT NULL,
+  snapshot_json TEXT NOT NULL CHECK(json_valid(snapshot_json)),
+  input_json TEXT NOT NULL CHECK(json_valid(input_json)),
+  phase TEXT NOT NULL CHECK(phase IN ('reserved','sending','running','succeeded','failed','interrupted','unknown','cancelled')),
+  native_execution_id TEXT,
+  created_at INTEGER NOT NULL,
+  ended_at INTEGER,
+  UNIQUE(project_id,request_key),
+  FOREIGN KEY(attempt_id,project_id,task_id,task_revision) REFERENCES attempts(id,project_id,task_id,task_revision),
+  FOREIGN KEY(binding_id,project_id,binding_epoch) REFERENCES role_bindings(id,project_id,epoch),
+  FOREIGN KEY(workspace_id,project_id) REFERENCES workspaces(id,project_id)
+);
+CREATE INDEX execution_unfinished ON execution_dispatches(phase,owner_key);

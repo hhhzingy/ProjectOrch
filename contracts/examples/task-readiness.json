@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "taskId": "synthetic-child",
+  "projectId": "synthetic-project",
+  "revision": 2,
+  "specRevision": 1,
+  "planRevision": 2,
+  "userPaused": false,
+  "dependencyReady": false,
+  "blocks": [{ "taskId": "synthetic-parent", "requiredRevision": 1, "currentRevision": 2, "reason": "PREREQ_SPEC_MISMATCH" }],
+  "unresolvedAttempts": []
+}

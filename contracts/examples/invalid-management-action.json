@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-example-2",
+  "projectId": "project-example",
+  "caseId": "case-example",
+  "expectedPlanRevision": 7,
+  "reason": "示例：增加迁移角色，尚未执行",
+  "operations": [
+    {
+      "type": "sql.execute",
+      "sql": "UPDATE roles SET admin=1"
+    },
+    {
+      "type": "task.assign",
+      "taskId": "task-example",
+      "expectedRevision": 2,
+      "roleLocalRef": "migration"
+    }
+  ]
+}

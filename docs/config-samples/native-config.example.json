@@ -1,0 +1,21 @@
+{
+  "_comment": "路径均为占位。仅官方正常登录，不读/复制认证；精确匹配已有支持身份后仍按当前权限、项目策略和预算放行有据能力；身份漂移/未测能力拒绝。executionTimeoutMs是整个原生轮执行期限，默认15分钟、最多30分钟；timeoutMs是旧兼容别名，双字段冲突拒绝。rpcTimeoutMs独立默认20秒、最多60秒。执行期限不是预算授权，不扩大次数/项目或总窗口。",
+  "zcode": {
+    "executable": "C:/path/to/node.exe",
+    "bundle": "C:/path/to/official/zcode.cjs",
+    "executionTimeoutMs": 900000
+  },
+  "zcodeEnv": {
+    "ZCODE_DATA_BASE_DIR": "C:/Users/<用户>/AppData/Roaming/SPB_Data",
+    "ZCODE_BUILTIN_PROVIDER_CONFIG_FILE": "C:/Users/<用户>/AppData/Roaming/SPB_Data/.zcode/v2/runtime/provider/windows-x86_64/<版本>/endpoint-…/zcode-builtin.json",
+    "ZCODE_PERSONAL_PROVIDER_CONFIG_FILE": "C:/Users/<用户>/AppData/Roaming/SPB_Data/.zcode/v2/provider_config.json",
+    "ZCODE_BASE_URL": "https://zcode.z.ai",
+    "ZCODE_ENV": "production"
+  },
+  "codex": {
+    "executable": "C:/Users/<用户>/AppData/Local/OpenAI/Codex/bin/<版本目录>/codex.exe",
+    "executionTimeoutMs": 900000,
+    "rpcTimeoutMs": 20000,
+    "sharedLogin": true
+  }
+}

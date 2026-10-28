@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "decisionId": "native-immutability-20261019",
+  "nativeSoftwareImmutable": true,
+  "allowedRoutes": ["official_cli", "official_rpc", "official_extension", "documented_configuration"],
+  "forbiddenStrategies": ["binary_patch", "bundle_rewrite", "modified_runtime_copy", "credential_export", "private_auth_interception"],
+  "onNativeUpdate": "invalidate_old_capability_proofs_and_reprobe",
+  "onUnknownOrUnsupportedCapability": "disable_and_explain",
+  "allowSilentModeSubstitution": false
+}

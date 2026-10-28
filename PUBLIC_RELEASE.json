@@ -1,0 +1,25 @@
+{
+  "applicationVersion": "0.1.0-alpha.1",
+  "repositoryUrl": "https://github.com/hhhzingy/ProjectOrch",
+  "maintainer": "hhhzingy",
+  "license": "Apache-2.0",
+  "licenseSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+  "publicationAuthorization": "AUTHORIZED_AFTER_ALPHA_ACCEPTANCE",
+  "basicNativeAcceptance": "ALPHA_SUBSET_ACCEPTED",
+  "publicationReadiness": "ALPHA_SUBSET_ACCEPTED_PENDING_PUBLICATION",
+  "published": false,
+  "privateSecurityContact": null,
+  "fullRoadmapStatus": "INCOMPLETE",
+  "statusMeaning": "构建时未公开快照；实际发布以GitHub Release成功记录为准",
+  "nativeEvidenceSubjects": [
+    {
+      "label": "first-project",
+      "sourceSha256": "19dc29805b296d2d6e5278603032378ac3675de1056f7f7cbcdf4b59a94eefb1"
+    },
+    {
+      "label": "independent-second-project",
+      "sourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98"
+    }
+  ],
+  "acceptanceScope": "仅已独立复核的基本Alpha子集；完整85任务及125验收不代表完成"
+}

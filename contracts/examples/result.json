@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "requestId": "req-example-3",
+  "projectId": "project-example",
+  "taskId": "task-example",
+  "taskRevision": 2,
+  "attemptId": "attempt-example",
+  "bindingEpoch": 3,
+  "outcome": "succeeded",
+  "summary": "仅为结构示例，不是实测结果",
+  "outputs": [
+    {
+      "artifactId": "artifact-example",
+      "version": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "outputName": "summary"
+    }
+  ],
+  "checks": [
+    {
+      "name": "示例检查",
+      "outcome": "not_run",
+      "evidenceArtifactId": "artifact-example"
+    }
+  ],
+  "remainingIssues": []
+}

@@ -1,0 +1,42 @@
+{
+  "name": "projectorch-execution-pack",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "description": "ProjectOrch本地多Harness协作内核；基本Alpha子集已验收，完整路线未齐，公开前构建快照",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build-app.mjs",
+    "typecheck": "node scripts/build-app.mjs --typecheck",
+    "test:offline": "node scripts/test-offline.mjs",
+    "start:kernel": "node apps/kernel/dist/main.js",
+    "build:windows": "node scripts/build-windows-candidate.mjs",
+    "contracts:check": "node scripts/generate-contracts.mjs --check"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "fflate": "0.8.3",
+    "typescript": "6.0.3",
+    "@types/node": "24.19.2",
+    "@biomejs/biome": "2.5.15",
+    "json-schema-to-typescript": "16.0.0"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hhhzingy/ProjectOrch"
+  },
+  "maintainers": [
+    {
+      "name": "hhhzingy"
+    }
+  ]
+}

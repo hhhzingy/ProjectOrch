@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectorch.invalid/schemas/approval.schema.json",
+  "title": "ProjectOrch approval.schema.json",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "roleId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "bindingEpoch": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "nativeApprovalId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "expectedExecutionId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "accept",
+        "decline",
+        "cancel"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "requestId",
+    "projectId",
+    "roleId",
+    "bindingEpoch",
+    "nativeApprovalId",
+    "expectedExecutionId",
+    "decision"
+  ],
+  "additionalProperties": false
+}
