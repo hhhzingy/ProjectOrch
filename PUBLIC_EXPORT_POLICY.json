@@ -474,7 +474,8 @@
     ".github/workflows/offline.yml": "ci.yml",
     "docs/25_NATIVE_ADAPTER_RUNTIME.md": "NATIVE_ADAPTER_RUNTIME.md",
     "config/compatibility.json": "compatibility.json",
-    "docs/SUPPORT_STATUS.json": "SUPPORT_STATUS.json"
+    "docs/SUPPORT_STATUS.json": "SUPPORT_STATUS.json",
+    ".gitattributes": ".gitattributes"
   },
   "excluded": {
     "tests/storage/adapter-integration.test.mjs": "官方原生/开发机路径测试，不运行且不带用户路径",

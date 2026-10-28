@@ -1,0 +1,2 @@
+# Preserve reviewed source bytes on every platform, including generated contracts.
+* -text

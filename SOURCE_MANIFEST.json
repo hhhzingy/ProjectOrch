@@ -8,7 +8,7 @@
   "repositoryUrl": "https://github.com/hhhzingy/ProjectOrch",
   "maintainer": "hhhzingy",
   "upstreamSourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98",
-  "sourceTreeSha256": "018e62784159c999d1971c7467d09b499704ff6c56669bc3ce75ea6f3bfc91b4",
+  "sourceTreeSha256": "a73e12fe3b21bf818c319f4020f14b14f9f7f7802b30cee8a5ffe99ba22c0ec0",
   "excluded": {
     "tests/storage/adapter-integration.test.mjs": "官方原生/开发机路径测试，不运行且不带用户路径",
     "tests/storage/harness-adapters.test.mjs": "官方原生/开发机路径测试",
@@ -26,6 +26,12 @@
     "其他未明确列出文件": "默认排除，不沿目录自动新增"
   },
   "files": [
+    {
+      "path": ".gitattributes",
+      "size": 91,
+      "sha256": "4718b0823683cac261500ffeb62f43241b5a93cd011b044a9ef9ab352161c272",
+      "origin": "public-git-byte-preservation"
+    },
     {
       "path": ".github/workflows/offline.yml",
       "size": 591,
@@ -52,9 +58,9 @@
     },
     {
       "path": "PUBLIC_EXPORT_POLICY.json",
-      "size": 24617,
-      "sha256": "3a536b0dd1f6b87cadce478073ffb33bc4d0d95f9917a9a2e55dc4bb976b05ac",
-      "origin": "explicit-export-policy"
+      "size": 24657,
+      "sha256": "b5e0ee2058f5c7b3dc4913f307fe735234c024f4b8fd165d565453f06da2341b",
+      "origin": "public-export-policy-git-byte-preservation"
     },
     {
       "path": "PUBLIC_RELEASE.json",
