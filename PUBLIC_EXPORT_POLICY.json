@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "purpose": "Apache-2.0本地公开候选白名单；整业务未验，不代表已发布",
   "source": {
-    "path": "outputs/source-checkpoints/ProjectOrch-source-1764766729267483.zip",
-    "sha256": "1764766729267483da14faa8fec6634689c8b94cbc920a8fee66924e1e72f75f"
+    "path": "outputs/source-checkpoints/ProjectOrch-source-d584503d47fc98f9.zip",
+    "sha256": "d584503d47fc98f911755cd8a23677b155a39bd627172100f5f2a05605385166"
   },
   "sourcePaths": [
     ".node-version",

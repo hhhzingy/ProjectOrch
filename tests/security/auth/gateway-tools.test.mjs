@@ -24,7 +24,7 @@ function fixture(t, initialMigrations) {
   const filename = path.join(dir, 'state.sqlite');
   const open = (migrations) => { const s = openStore(filename, migrations ? { migrations } : {}); stores.push(s); return s; };
   const store = open(initialMigrations);
-  createProject(store, { id: 'p1', name: 'a', hostId: 'h', canonicalRoot: 'E:/synthetic/tools', objective: '目标X' }, 100);
+  createProject(store, { id: 'p1', name: 'a', hostId: 'h', canonicalRoot: dir, objective: '目标X' }, 100);
   createRole(store, { id: 'r-worker', projectId: 'p1', name: 'worker', charter: 'c', permissionProfileId: 'worker' }, 101);
   createRole(store, { id: 'r-peer', projectId: 'p1', name: 'peer', charter: 'c', permissionProfileId: 'worker' }, 102);
   createTask(store, { id: 't-1', projectId: 'p1', roleId: 'r-worker', goal: 'g' }, 103);

@@ -7,8 +7,8 @@
   "applicationVersion": "0.1.0-alpha.1",
   "repositoryUrl": "https://github.com/hhhzingy/ProjectOrch",
   "maintainer": "hhhzingy",
-  "upstreamSourceSha256": "1764766729267483da14faa8fec6634689c8b94cbc920a8fee66924e1e72f75f",
-  "sourceTreeSha256": "889fff8c715bc08d3f3a8407989fb4c001324c5ba037b201aa5c7e7cb9274d62",
+  "upstreamSourceSha256": "d584503d47fc98f911755cd8a23677b155a39bd627172100f5f2a05605385166",
+  "sourceTreeSha256": "a80297644b87cccdbfe6f7804dc4b7a0301587c6def17f37c971b8117117501a",
   "excluded": {
     "tests/storage/adapter-integration.test.mjs": "官方原生/开发机路径测试，不运行且不带用户路径",
     "tests/storage/harness-adapters.test.mjs": "官方原生/开发机路径测试",
@@ -59,7 +59,7 @@
     {
       "path": "PUBLIC_EXPORT_POLICY.json",
       "size": 24657,
-      "sha256": "3ed94344e04de7656a53ece696f374a1672ea21271af85c63e559392d6fd9348",
+      "sha256": "a3cf0c5ec80e4dd5a3eca389b3c53b79d6749a0f799b40ca9b9d87980c0abfde",
       "origin": "public-export-policy-git-byte-preservation"
     },
     {
@@ -2200,9 +2200,9 @@
     },
     {
       "path": "tests/security/auth/gateway-tools.test.mjs",
-      "size": 45170,
-      "sha256": "453d8baf234c48e9408efa83f77b79aa51cb3cbf891a55de3f452606ebc64f52",
-      "origin": "reviewed-source"
+      "size": 45153,
+      "sha256": "1e42e746dc792a87ba2fcecbaad10e07495fe1557abf7ed9744f91e94f27bb08",
+      "origin": "reviewable-ci-test-path-and-cleanup-fix"
     },
     {
       "path": "tests/security/auth/handover-provision.test.mjs",
@@ -2871,7 +2871,6 @@
   "statusMeaning": "构建时未公开快照；实际发布以GitHub Release成功记录为准",
   "productSourceEvidenceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98",
   "ciTestOnlyDelta": [
-    "tests/adapters/temporary-directory.mjs",
-    "tests/recovery/fault-injection.test.mjs"
+    "tests/security/auth/gateway-tools.test.mjs"
   ]
 }
