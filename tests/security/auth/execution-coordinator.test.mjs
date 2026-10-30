@@ -52,7 +52,7 @@ test('执行预约幂等、同实例并发run仅发送一次，精确原生终�
   f.coordinator.close();
 });
 
-test('预约后暂停/策略/规格/握手/兼容版本/门槛变化在外发前拒绝，已确认未发可释放', async t => {
+test('预约后暂停/策略/规格/握手/当前程序快照/门槛变化在外发前拒绝', async t => {
   for (const scenario of ['paused', 'policy', 'spec', 'ack', 'capability', 'identity', 'gate', 'driver', 'session', 'root']) {
     const f = fixture(t); const id = f.prepare();
     if (scenario === 'paused') f.store.db.exec("UPDATE projects SET user_paused=1 WHERE id='p'");

@@ -33,7 +33,10 @@ export function executionFixture(t) {
   registerWorkspace(store, { id: 'workspace', projectId: 'p', canonicalPath: workspaceRoot, enforcement: 'enforced' }, 150);
   const registry = new NativeCompatibilityRegistry();
   let identity = { harnessId: 'zcode', version: 'synthetic-only', executableSha256: 'a'.repeat(64), bundleSha256: null, adapterProtocol: 'synthetic-driver-v1', route: 'official_cli' };
-  const prove = capabilities => registry.recordTrustedProbe({ identity, probeId: 'synthetic-only', evidenceSha256: 'b'.repeat(64), capabilities });
+  const prove = capabilities => {
+    registry.setAdapterCapabilities(identity, Object.keys(capabilities).filter(c => capabilities[c] === 'verified'));
+    registry.recordTrustedProbe({ identity, probeId: 'synthetic-only', evidenceSha256: 'b'.repeat(64), capabilities });
+  };
   prove({ textInput: 'verified', resume: 'verified', historyRead: 'verified', roleTools: 'verified' });
   let resolveResult, rejectResult; const result = new Promise((resolve, reject) => { resolveResult = resolve; rejectResult = reject; });
   let calls = 0, observe; let owner = true; let gate = true; let startOverride;

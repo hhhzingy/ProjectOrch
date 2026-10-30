@@ -1,5 +1,5 @@
 {
-  "applicationVersion": "0.1.0-alpha.1",
+  "applicationVersion": "0.1.0-alpha.2",
   "repositoryUrl": "https://github.com/hhhzingy/ProjectOrch",
   "maintainer": "hhhzingy",
   "license": "Apache-2.0",
@@ -21,5 +21,7 @@
       "sourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98"
     }
   ],
-  "acceptanceScope": "仅已独立复核的基本Alpha子集；完整85任务及125验收不代表完成"
+  "acceptanceScope": "仅已独立复核的基本Alpha子集；完整85任务及125验收不代表完成",
+  "runtimeVersionPolicy": "NO_HARNESS_VERSION_OR_HISTORICAL_HASH_ALLOWLIST",
+  "currentReleaseValidation": "版本策略变更经离线回归及官方程序无模型启动检查；本候选尚未重跑真实模型协作项目，历史证据subject不变。"
 }

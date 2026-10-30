@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
-const roots=['unit','contracts','adapters','security','storage','plan-impact','recovery','upgrade'];
+const roots=['compatibility','unit','contracts','adapters','security','storage','plan-impact','recovery','upgrade'];
 const files=[];
 function walk(p){for(const entry of fs.readdirSync(p,{withFileTypes:true})){const f=path.join(p,entry.name);if(entry.isSymbolicLink())throw Error('TEST_LINK_REJECTED');if(entry.isDirectory())walk(f);else if(entry.name.endsWith('.test.mjs'))files.push(f);}}
 for(const name of roots)if(fs.existsSync('tests/'+name))walk('tests/'+name);

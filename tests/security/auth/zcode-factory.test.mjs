@@ -38,17 +38,17 @@ function registryWith(partial) {
 }
 const identityOf = (exe, bundle) => detectZcodeIdentity(exe, bundle);
 
-test('T111离线：身份现场探针（--version+字节哈希，不硬编码）；未注册身份能力核验拒绝', t => {
+test('T111离线：现场身份保留，历史测试哈希不匹配不阻止接入', t => {
   const dir = temporaryDirectory(t, 'projectorch-t111-id-');
   const bundle = makeSyntheticBundle(dir, 'ok');
   const identity = identityOf(process.execPath, bundle);
   assert.equal(identity.version, '0.17.0-synthetic', '版本来自现场探针');
   assert.match(identity.bundleSha256, /^[a-f0-9]{64}$/);
   assert.match(identity.executableSha256, /^[a-f0-9]{64}$/);
-  // registry只注册了不同身份（伪造的哈希）→拒绝
+  // 合成历史记录与当前构建不同，不能据此设置运行白名单。
   const registry = registryWith({ harnessId: 'zcode', version: '0.17.0-synthetic', executableSha256: 'f'.repeat(64), bundleSha256: 'e'.repeat(64), adapterProtocol: 'zcode-cli-jsonl-v2', route: 'official_cli' });
   const factory = new ZcodeSessionFactory({ executable: process.execPath, bundle, env: {}, leaseDirectory: dir, registry });
-  assert.throws(() => factory.assertCapabilities(), /NATIVE_CAPABILITY_UNVERIFIED/, '字节不匹配的注册身份拒绝');
+  assert.doesNotThrow(() => factory.assertCapabilities());
 });
 
 test('工厂租约目录缺失在CLI发送前拒绝，不创建未知会话',async t=>{

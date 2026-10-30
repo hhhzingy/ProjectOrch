@@ -75,6 +75,7 @@ test('T116离线：默认workflowFactory持续派发——两任务被消费执�
       const registry = new NativeCompatibilityRegistry();
       registryRef = registry;
       identity = { harnessId: 'zcode', version: 'synthetic-t116', executableSha256: 'a'.repeat(64), bundleSha256: null, adapterProtocol: 'synthetic', route: 'official_cli' };
+      registry.setAdapterCapabilities(identity, ['textInput', 'resume', 'historyRead', 'roleTools']);
       registry.recordTrustedProbe({ identity, probeId: 't116', evidenceSha256: 'b'.repeat(64), capabilities: { textInput: 'verified', resume: 'verified', historyRead: 'verified', roleTools: 'verified' } });
       const credential = store.db.prepare("SELECT id FROM agent_credentials ORDER BY created_at DESC LIMIT 1").get();
       void credential;
@@ -131,6 +132,7 @@ test('T116离线：重启接管——在途执行转unknown且不重发；新内
       const session2 = { harnessId: 'zcode', hostId: 'h', profileId: 'p', nativeConversationId: 'sess-t116' };
       const registry = new NativeCompatibilityRegistry();
       const identity = { harnessId: 'zcode', version: 'synthetic-t116', executableSha256: 'a'.repeat(64), bundleSha256: null, adapterProtocol: 'synthetic', route: 'official_cli' };
+      registry.setAdapterCapabilities(identity, ['textInput', 'resume', 'historyRead', 'roleTools']);
       registry.recordTrustedProbe({ identity, probeId: 't116', evidenceSha256: 'b'.repeat(64), capabilities: { textInput: 'verified', resume: 'verified', historyRead: 'verified', roleTools: 'verified' } });
       const cred = getCredential(store);
       const principal = authenticateAgentCredential(store, cred, Date.now());
@@ -154,6 +156,7 @@ test('T116离线：重启接管——在途执行转unknown且不重发；新内
   const runtime2 = await startKernel({ filename: f.filename, principalId: 'user-1', workflowPollMs: 100,
     workflowFactory: (store, ctx) => {
       const registry = new NativeCompatibilityRegistry(); const identity = { harnessId: 'zcode', version: 'synthetic-t116', executableSha256: 'a'.repeat(64), bundleSha256: null, adapterProtocol: 'synthetic', route: 'official_cli' };
+      registry.setAdapterCapabilities(identity, ['textInput', 'resume', 'historyRead', 'roleTools']);
       registry.recordTrustedProbe({ identity, probeId: 't116', evidenceSha256: 'b'.repeat(64), capabilities: { textInput: 'verified', resume: 'verified', historyRead: 'verified', roleTools: 'verified' } });
       const cred = getCredential(store); const principal = authenticateAgentCredential(store, cred, Date.now());
       const session2 = { harnessId: 'zcode', hostId: 'h', profileId: 'p', nativeConversationId: 'sess-t116' };

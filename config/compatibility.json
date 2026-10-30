@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "EXACT_HISTORICAL_LOW_LEVEL_SUPPORT_ONLY",
+  "status": "TESTED_VERSIONS_REFERENCE_ONLY",
   "businessAcceptance": "NOT_COMPLETED",
   "entries": [
     {
@@ -39,5 +39,6 @@
       "evidence": "docs/SUPPORT_STATUS.json#codex",
       "testedAt": "2026-10-27"
     }
-  ]
+  ],
+  "runtimeVersionPolicy": "NO_VERSION_ALLOWLIST"
 }

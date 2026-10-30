@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Apache-2.0本地公开候选白名单；整业务未验，不代表已发布",
+  "purpose": "公开仓库增量发布白名单；历史source字段仅追溯首发导出，不是本版本源码快照。",
   "source": {
     "path": "outputs/source-checkpoints/ProjectOrch-source-d584503d47fc98f9.zip",
     "sha256": "d584503d47fc98f911755cd8a23677b155a39bd627172100f5f2a05605385166"
@@ -293,6 +293,7 @@
     "tests/adapters/zcode-cli-worker.mjs",
     "tests/adapters/zcode-text-process.test.mjs",
     "tests/adapters/zcode-text-session.test.mjs",
+    "tests/compatibility/doctor.test.mjs",
     "tests/contracts/contracts.test.mjs",
     "tests/contracts/mcp-literal-types.test.mjs",
     "tests/contracts/mcp-union-description.test.mjs",
@@ -480,7 +481,6 @@
   "excluded": {
     "tests/storage/adapter-integration.test.mjs": "官方原生/开发机路径测试，不运行且不带用户路径",
     "tests/storage/harness-adapters.test.mjs": "官方原生/开发机路径测试",
-    "tests/compatibility/doctor.test.mjs": "包含私有完整实测矩阵断言；公开仅保留精确已测身份低层支持摘要，不继承私有矩阵整体断言",
     "tests/unit/zcode-proposal.test.mjs": "用户已拒绝的定制客户端方案非当前交付范围",
     "reports/**": "全部私有报告/真实聊天/证据",
     "work/**": "会话/凭据/用户项目/数据库",
@@ -488,9 +488,10 @@
     "spikes/**": "原生探针和内部执行控制器",
     "tests/native/**": "官方输入不在离线发布检查",
     "tests/performance/**": "除纯统计辅助metrics.mjs外，实际基准/长稳不在最小离线范围，未宣称通过",
-    "config/compatibility.json": "原私有完整矩阵不导出；替换为精确已测身份有据低层能力摘要，未测/漂移拒绝；基本Alpha子集已验，不外推完整路线",
+    "config/compatibility.json": "仅公开历史测试版本/逐能力摘要，不公开私有报告；测试记录不限制运行版本。",
     "docs/**": "只导出专门整理的公开模板和无秘密配置样例",
     ".github/**": "替换为最小Windows离线CI",
     "其他未明确列出文件": "默认排除，不沿目录自动新增"
-  }
+  },
+  "approvedDeltaFromPublicCommit": "0a8988de1959b6f128d64ba80c7114ec54ca9e45"
 }

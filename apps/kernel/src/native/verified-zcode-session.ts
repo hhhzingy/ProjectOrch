@@ -22,6 +22,7 @@ export class VerifiedZCodeTextSession {
   #assertCompatible(): void {
     const hash = (p: string) => createHash("sha256").update(readFileSync(p)).digest("hex");
     const installed = { ...this.#identity, executableSha256: hash(this.#options.executable), bundleSha256: hash(this.#options.bundle) };
+    if (installed.executableSha256 !== this.#identity.executableSha256 || installed.bundleSha256 !== this.#identity.bundleSha256) throw new Error("NATIVE_RUNTIME_CHANGED_RESTART_REQUIRED");
     for (const capability of ["textInput", "resume"] as const) {
       const decision = this.#registry.decide(installed, capability);
       if (!decision.enabled) throw new Error(decision.state === "unsupported" ? "NATIVE_CAPABILITY_UNSUPPORTED" : "NATIVE_COMPATIBILITY_PROBE_REQUIRED");

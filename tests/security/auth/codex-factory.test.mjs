@@ -21,17 +21,17 @@ function registryWith(identity) {
   return registry;
 }
 
-test('T112离线：身份现场探针（--version+二进制哈希）；未注册身份拒绝', t => {
+test('T112离线：现场身份保留，未列入历史测试的版本不被拒绝', t => {
   const dir = temporaryDirectory(t, 'projectorch-t112-id-');
   const exe = syntheticCodexCli(dir);
   const identity = detectCodexIdentity(exe);
   assert.equal(identity.version, 'codex-cli 0.163.0-synthetic');
   assert.match(identity.executableSha256, /^[a-f0-9]{64}$/);
-  // 未注册此真实身份的registry→拒绝
+  // 历史记录与当前构建不同：只影响已测试标记，不限制运行。
   const registry = registryWith({ harnessId: 'codex', version: '其他版本', executableSha256: 'f'.repeat(64), bundleSha256: null, adapterProtocol: 'codex-app-server-jsonl-v2', route: 'official_rpc' });
   const leaseDir = path.join(dir, 'leases'); fs.mkdirSync(leaseDir);
   const factory = new CodexThreadFactory({ executable: exe, cwd: dir, env: {}, leaseDirectory: leaseDir, registry });
-  assert.throws(() => factory.assertCapabilities(), /NATIVE_CAPABILITY_UNVERIFIED/);
+  assert.doesNotThrow(() => factory.assertCapabilities());
 });
 
 test('T112离线：合成adapter线程创建+章程——onStep边界（sent→observed）、官方threadId、marker观察', async t => {

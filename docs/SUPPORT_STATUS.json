@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-10-28",
+  "asOf": "2026-10-30",
   "upstreamSourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98",
   "publicationReadiness": "ALPHA_SUBSET_ACCEPTED_PENDING_PUBLICATION",
   "basicNativeAcceptance": "ALPHA_SUBSET_ACCEPTED",
-  "scope": "Windows x64；精确官方程序字节/协议，默认模型，仅现有账号，串行三角色；不修改原生软件",
+  "scope": "Windows x64；已测试版本记录仅供参考，不限制Harness版本；串行三角色及原有权限/预算约束保留。",
   "identities": [
     {
       "identity": {
@@ -88,19 +88,18 @@
   "notEstablished": [
     "完整85任务路线及全部规划验收；同一源码hash连续两次原生场景",
     "所有账号/模型权益及无限额度",
-    "不匹配或更新后的Harness程序身份",
     "nativeCancel/nativeApprovals/任意原生UI附着",
-    "干净Windows/完整云CI"
+    "干净Windows/完整云CI",
+    "alpha.2源码的新增真实模型协作项目；未记录版本的完整协议/模型适用性"
   ],
-  "normalUse": "配置官方已登录程序；程序自动比较精确身份并遵守项目策略、权限和预算。不要手改verified、程序哈希或SQLite。维护者用实际测试更新适用数据；不匹配版本保持拒绝。",
+  "normalUse": "配置官方已登录程序；日志显示当前版本及已测试通过版本。所有版本可尝试运行，仍遵守真实会话、权限、暂停、预算和接口协议。不要修改旧证据或程序哈希冒称未测版本已通过。",
   "nextReleaseGate": "最终公开件独立核对后按既有授权发布；发布事实另以远端成功记录为准，不再发送模型或恢复旧未知。",
   "scenarioStatus": {
     "firstProject": "INDEPENDENTLY_REVIEWED_PASS_ON_19DC",
     "independentSecondProject": "INDEPENDENTLY_REVIEWED_PASS_ON_1EB",
     "previousSecondProject": "QUOTA_FAILED_PRESERVED_NOT_RESUMED",
-    "currentSource": "ALPHA_SUBSET_ACCEPTED_WITH_EXPLICIT_DIAGNOSTIC_CHANGE_APPLICABILITY"
+    "currentSource": "VERSION_POLICY_DELTA_OFFLINE_AND_NO_MODEL_STARTUP_CHECKED_NATIVE_SCENARIO_NOT_RERUN"
   },
-  "currentSourceDelta": "与19dc仅4处安全诊断透传，业务/身份/权限/终态语义不变；5ada到1eb只删除测试的两条无用私有导入。各原生证据保留实际subject，不重绑旧记录。",
   "fullRoadmapStatus": "INCOMPLETE",
   "publishedAtBuildTime": false,
   "nativeEvidenceSubjects": [
@@ -112,5 +111,9 @@
       "label": "independent-second-project",
       "sourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98"
     }
-  ]
+  ],
+  "runtimeVersionPolicy": "NO_VERSION_ALLOWLIST",
+  "testCoverageNote": "identities 仅记录历史上实际测试的构建、版本和逐能力结论，不是运行白名单。未测版本允许使用现有适配器能力，不自动变成 verified；实际接口失败按真实结果处理。历史源码哈希及证据指纹保持原值。",
+  "historicalSourceDelta": "与19dc仅4处安全诊断透传，业务/身份/权限/终态语义不变；5ada到1eb只删除测试的两条无用私有导入。各原生证据保留实际subject，不重绑旧记录。",
+  "currentSourceDelta": "alpha.2取消版本/历史哈希白名单；测试状态与实际适配能力分离，正常重启可载入新版。历史模型测试不重绑到本源码。"
 }

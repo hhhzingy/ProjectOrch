@@ -26,7 +26,7 @@ import type { McpBackend } from "../tools/mcp-http-host.js";
 import { pumpMessageDelivery, type NativeTurnReceipt, type DeliveryTarget } from "../execution/message-delivery.js";
 import { ZCodeTextProcess } from "../native/zcode-text-process.js";
 import { NativeCompatibilityRegistry } from "../native/compatibility.js";
-import { gateStartupIdentity, loadCompatibilityMatrix } from "../doctor/index.js";
+import { compatibilityNotice, recordStartupTestHistory, loadCompatibilityMatrix } from "../doctor/index.js";
 import { NativeRpcError } from "../native/stdio-peer.js";
 import { writeBindingToolConfig, codexRoleToolOverrides } from '../tools/binding-tool-config.js';
 import { assertMessageSenderAuthorized } from '../execution/message-authorization.js';
@@ -253,15 +253,15 @@ export async function startApplication(dataDirectory: string, options: StartAppl
     // R043：启动现场身份重核+受信能力登记——T051起经兼容矩阵闸门：身份（版本+双哈希+协议）在矩阵内
     // 才登记矩阵结论（先前真实探针证据）；漂移→不登记，工厂与投递按unverified拒绝（不凭上次成功永久verified）。
     const detected = detectZcodeIdentity(options.native!.zcode!.executable, options.native!.zcode!.bundle);
-    const zcodeGate = gateStartupIdentity(registry, compatibilityMatrix, matrixSource, { harnessId: 'zcode', version: detected.version, executableSha256: detected.executableSha256, bundleSha256: detected.bundleSha256, adapterProtocol: 'zcode-cli-jsonl-v2', route: 'official_cli' }, `kernel-startup-${Date.now().toString(36)}`);
-    if (!zcodeGate.registered) console.warn(`[doctor] zcode身份漂移：版本${detected.version}不在兼容矩阵（${matrixSource}），zcode相关自动写动作停止，待复验能力=${zcodeGate.pendingReverify.join(',')}`);
+    recordStartupTestHistory(registry, compatibilityMatrix, matrixSource, { harnessId: 'zcode', version: detected.version, executableSha256: detected.executableSha256, bundleSha256: detected.bundleSha256, adapterProtocol: 'zcode-cli-jsonl-v2', route: 'official_cli' }, `kernel-startup-${Date.now().toString(36)}`);
+    console.warn(compatibilityNotice(compatibilityMatrix, { harnessId: 'zcode', version: detected.version, executableSha256: detected.executableSha256, bundleSha256: detected.bundleSha256, adapterProtocol: 'zcode-cli-jsonl-v2', route: 'official_cli' }));
   }
   if (options.native?.codex) {
     // R043：同上——Codex官方app-server身份现场重核+经矩阵闸门登记
     const { detectCodexIdentity } = await import("../execution/codex-supervisor.js");
     const codexDetected = detectCodexIdentity(options.native.codex.executable);
-    const codexGate = gateStartupIdentity(registry, compatibilityMatrix, matrixSource, { harnessId: 'codex', version: codexDetected.version, executableSha256: codexDetected.executableSha256, bundleSha256: null, adapterProtocol: 'codex-app-server-jsonl-v2', route: 'official_rpc' }, `kernel-startup-codex-${Date.now().toString(36)}`);
-    if (!codexGate.registered) console.warn(`[doctor] codex身份漂移：版本${codexDetected.version}不在兼容矩阵（${matrixSource}），codex相关自动写动作停止，待复验能力=${codexGate.pendingReverify.join(',')}`);
+    recordStartupTestHistory(registry, compatibilityMatrix, matrixSource, { harnessId: 'codex', version: codexDetected.version, executableSha256: codexDetected.executableSha256, bundleSha256: null, adapterProtocol: 'codex-app-server-jsonl-v2', route: 'official_rpc' }, `kernel-startup-codex-${Date.now().toString(36)}`);
+    console.warn(compatibilityNotice(compatibilityMatrix, { harnessId: 'codex', version: codexDetected.version, executableSha256: codexDetected.executableSha256, bundleSha256: null, adapterProtocol: 'codex-app-server-jsonl-v2', route: 'official_rpc' }));
   }
   const runtime = await startKernel(kernelOptions as never);
   let pumpInterval: ReturnType<typeof setInterval> | undefined;

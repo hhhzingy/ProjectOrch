@@ -1,4 +1,4 @@
-# ProjectOrch 0.1.0-alpha.1
+# ProjectOrch 0.1.0-alpha.2
 
 本地多Harness协作内核（Local Kernel）：AI在Codex、ZCode聊天中通过MCP建立角色、分工和交互；用户主要监督任务、模型与进度，在Web答题、调整偏好或暂停。
 
@@ -23,7 +23,7 @@ Windows普通用户、Node.js 24.22.0。源码不含运行时/Harness；Windows 
 4. npm run test:offline
 5. npm run start:kernel -- --data-dir E:\ProjectOrchData --pair
 
-用实际启动地址和本次配对信息进入Web，按[首次使用](docs/user/ALPHA_FIRST_USE.md)配置官方程序及MCP。匹配支持身份后仍遵守用户项目策略、权限和预算，不能手改verified或SQLite绕过。按[三角色示例](examples/three-role/README.md)建立团队；严格模型请求不支持时停发。
+用实际启动地址和本次配对信息进入Web，按[首次使用](docs/user/ALPHA_FIRST_USE.md)配置官方程序及MCP。已测试版本只供参考，不设置版本白名单；运行仍遵守用户项目策略、权限、预算及真实接口结果，不能手改verified或SQLite冒称已测试。按[三角色示例](examples/three-role/README.md)建立团队；严格模型请求不支持时停发。
 
 查看[限制](docs/user/ALPHA_KNOWN_ISSUES.md)、[停止恢复](docs/user/WINDOWS_CANDIDATE_GUIDE.md)、[发布说明](RELEASE_NOTES.md)、[第三方许可](THIRD_PARTY_NOTICES.md)。私密漏洞报告入口尚未实际启用，不造邮箱，不公开上传敏感材料。
 

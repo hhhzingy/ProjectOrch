@@ -80,6 +80,7 @@ export class CodexAdapter {
     if (!c) throw new Error("NATIVE_COMPATIBILITY_PROBE_REQUIRED");
     if (c.identity.harnessId !== "codex" || c.identity.route !== "official_rpc" || c.identity.adapterProtocol !== codexAdapterProtocol || c.identity.bundleSha256 !== null) throw new Error("UNSUPPORTED_NATIVE_ADAPTER_ROUTE");
     const installed = { ...c.identity, executableSha256: createHash("sha256").update(readFileSync(this.#options.executable)).digest("hex") };
+    if (installed.executableSha256 !== c.identity.executableSha256) throw new Error("NATIVE_RUNTIME_CHANGED_RESTART_REQUIRED");
     const decision = c.registry.decide(installed, capability);
     if (!decision.enabled) throw new Error(decision.state === "unsupported" ? "NATIVE_CAPABILITY_UNSUPPORTED" : "NATIVE_COMPATIBILITY_PROBE_REQUIRED");
   }

@@ -1,7 +1,4 @@
-/** T051：doctor与兼容漂移处理。兼容矩阵=先前真实探针固化的身份→能力证据（config/compatibility.json）；
- * gateStartupIdentity=启动登记闸门：身份在矩阵内→按矩阵登记（有据verified/unsupported）；
- * 不在→不登记（漂移，decide按unverified拒绝受影响写动作）——杜绝"凭上次成功永久verified"。
- * doctorReport=脱敏诊断（sha截断、版本明示、待复验能力清单、受影响自动写动作、其余harness不受影响）。 */
+/** T051：兼容表只记载实际测过的构建与能力。未命中不拒绝运行，也不冒称测试通过。 */
 import { readFileSync, existsSync } from "node:fs";
 import { nativeCapabilities, type NativeCapability, type NativeCapabilityProof, type NativeIdentity, NativeCompatibilityRegistry, type NativeCapabilityDecision } from "../native/compatibility.js";
 
@@ -19,13 +16,13 @@ export interface CompatibilityMatrix {
 
 const identityKey = (i: NativeIdentity): string => JSON.stringify([i.harnessId, i.version, i.executableSha256, i.bundleSha256, i.adapterProtocol, i.route]);
 
-/** 读取+校验兼容矩阵。矩阵是交付数据：只含实测身份与探针结论，不存在默认放行。 */
+/** 历史测试记录是可选诊断数据；无记录不影响原生接入。损坏的数据仍明确报错。 */
 export function loadCompatibilityMatrix(matrixPath: string): CompatibilityMatrix {
-  if (!existsSync(matrixPath)) throw new Error(`COMPATIBILITY_MATRIX_MISSING: ${matrixPath}`);
+  if (!existsSync(matrixPath)) return { schemaVersion: 1, entries: [] };
   const raw = JSON.parse(readFileSync(matrixPath, "utf8")) as { identityMatrix?: CompatibilityMatrix } & CompatibilityMatrix;
   // 兼容两种形态：独立矩阵文件（顶层entries）或融合清单（identityMatrix字段，保留G1历史段）
   const parsed = raw.identityMatrix ?? raw;
-  if (parsed?.schemaVersion !== 1 || !Array.isArray(parsed.entries) || !parsed.entries.length) throw new Error("INVALID_COMPATIBILITY_MATRIX");
+  if (parsed?.schemaVersion !== 1 || !Array.isArray(parsed.entries)) throw new Error("INVALID_COMPATIBILITY_MATRIX");
   const seen = new Set<string>();
   for (const entry of parsed.entries) {
     const key = identityKey(entry.identity);
@@ -40,22 +37,24 @@ export function loadCompatibilityMatrix(matrixPath: string): CompatibilityMatrix
 
 export interface GateResult {
   readonly registered: boolean;
-  readonly reason: "matrix_match" | "identity_drift";
+  readonly reason: "matrix_match" | "not_previously_tested";
   readonly matrixPath: string;
   readonly matchedEntry: MatrixEntry | null;
   readonly pendingReverify: readonly NativeCapability[];
 }
 
-/** 启动登记闸门：矩阵匹配→登记矩阵结论；漂移→不登记（返回待复验清单）。绝不无条件verified。 */
-export function gateStartupIdentity(registry: NativeCompatibilityRegistry, matrix: CompatibilityMatrix, matrixPath: string, identity: NativeIdentity, probeId: string): GateResult {
+/** 保留名称兼容现有调用方；registered 仅表示登记了历史证据，不表示运行许可。 */
+export function recordStartupTestHistory(registry: NativeCompatibilityRegistry, matrix: CompatibilityMatrix, matrixPath: string, identity: NativeIdentity, probeId: string): GateResult {
   const entry = matrix.entries.find(e => identityKey(e.identity) === identityKey(identity)) ?? null;
   if (!entry) {
-    return { registered: false, reason: "identity_drift", matrixPath, matchedEntry: null, pendingReverify: [...nativeCapabilities] };
+    return { registered: false, reason: "not_previously_tested", matrixPath, matchedEntry: null, pendingReverify: [...nativeCapabilities] };
   }
   registry.recordTrustedProbe({ identity, probeId, evidenceSha256: identity.executableSha256, capabilities: entry.capabilities } satisfies NativeCapabilityProof);
   const pendingReverify = nativeCapabilities.filter(c => !entry.capabilities[c]);
   return { registered: true, reason: "matrix_match", matrixPath, matchedEntry: entry, pendingReverify };
 }
+/** 兼容旧调用名；此函数不再是运行闸门。 */
+export const gateStartupIdentity = recordStartupTestHistory;
 
 const maskSha = (sha: string | null): string | null => sha === null ? null : `${sha.slice(0, 12)}…`;
 
@@ -73,6 +72,7 @@ export interface DoctorHarnessRow {
   readonly bundleSha256Masked: string | null;
   readonly adapterProtocol: string;
   readonly inMatrix: boolean;
+  readonly testedVersions: readonly { readonly version: string; readonly testedAt: string; readonly passedCapabilities: readonly NativeCapability[] }[];
   readonly capabilities: readonly DoctorCapabilityRow[];
   readonly affectedWriteActions: readonly string[];
   readonly pendingReverify: readonly NativeCapability[];
@@ -97,8 +97,7 @@ const WRITE_ACTIONS_BY_CAPABILITY: Readonly<Record<NativeCapability, readonly st
   roleTools: Object.freeze(["role_tools(会话内意图工具: task/artifact/inbox/message)"]),
 });
 
-/** 脱敏诊断：逐harness输出当前身份、矩阵匹配、能力判定与受影响自动写动作。
- * 身份键按harness隔离：任一harness漂移只停自身写动作，不影响其余harness/项目。 */
+/** 已测试版本与当前可用能力分别展示；未知版本不是阻塞原因。 */
 export function doctorReport(input: { readonly now: number; readonly matrix: CompatibilityMatrix; readonly matrixPath: string; readonly installed: readonly NativeIdentity[]; readonly registry: NativeCompatibilityRegistry }): DoctorReport {
   const harnesses: DoctorHarnessRow[] = input.installed.map(identity => {
     const inMatrix = input.matrix.entries.some(e => identityKey(e.identity) === identityKey(identity));
@@ -114,8 +113,9 @@ export function doctorReport(input: { readonly now: number; readonly matrix: Com
       bundleSha256Masked: maskSha(identity.bundleSha256),
       adapterProtocol: identity.adapterProtocol,
       inMatrix,
+      testedVersions: testedVersions(input.matrix, identity.harnessId),
       capabilities,
-      affectedWriteActions: capabilities.filter(c => !c.enabled && c.state !== "unverified" || c.state === "unverified" && WRITE_ACTIONS_BY_CAPABILITY[c.capability].length > 0).flatMap(c => WRITE_ACTIONS_BY_CAPABILITY[c.capability]),
+      affectedWriteActions: capabilities.filter(c => !c.enabled).flatMap(c => WRITE_ACTIONS_BY_CAPABILITY[c.capability]),
       pendingReverify: matrixEntry ? nativeCapabilities.filter(c => !matrixEntry.capabilities[c]) : [...nativeCapabilities],
     };
   });
@@ -124,6 +124,15 @@ export function doctorReport(input: { readonly now: number; readonly matrix: Com
     matrixPath: input.matrixPath,
     matrixEntries: input.matrix.entries.length,
     harnesses,
-    note: "能力结论只认矩阵内同身份（版本+双哈希+协议）先前真实探针证据；身份漂移→受影响自动写动作停止并列出待复验能力；其余harness与项目不受影响。",
+    note: "已测试版本仅供参考，不按版本或程序哈希设置运行白名单。未测构建保持未测试标识，可使用适配器已实现的能力；协议、实际接口、可信会话、权限与预算仍按运行结果校验。pendingReverify 仅为测试覆盖提示，不是运行前置条件。",
   };
+}
+
+export function testedVersions(matrix: CompatibilityMatrix, harnessId: NativeIdentity["harnessId"]): DoctorHarnessRow["testedVersions"] {
+  return matrix.entries.filter(e => e.identity.harnessId === harnessId).map(e => ({ version: e.identity.version, testedAt: e.testedAt, passedCapabilities: nativeCapabilities.filter(c => e.capabilities[c] === "verified") })).filter(e => e.passedCapabilities.length > 0);
+}
+
+export function compatibilityNotice(matrix: CompatibilityMatrix, current: NativeIdentity): string {
+  const versions = [...new Set(testedVersions(matrix, current.harnessId).map(e => e.version))];
+  return `[compatibility] ${current.harnessId} 当前版本：${current.version}；已测试通过版本：${versions.join("、") || "暂无记录"}。测试覆盖仅供参考，不限制版本；实际接口失败时如实报错。`;
 }

@@ -1,6 +1,6 @@
 import type {Store} from '@projectorch/persistence';
 
-const reasons:Readonly<Record<string,string>>={MODEL_SELECTION_UNRESOLVED:'模型请求尚未解析',MODEL_SELECTION_UNAVAILABLE:'官方模型选择未通过',COST_ENFORCEMENT_UNAVAILABLE:'费用上限尚无官方执行证明',DISPATCH_CONCURRENCY_EXCEEDED:'并发容量已占用（含未知工厂/消息）',DISPATCH_ATTEMPTS_EXCEEDED:'尝试预算已达到',WORKSPACE_CONFLICT:'工作目录被未决执行占用',STARTUP_REQUIRED:'当前版本启动握手未完成',STARTUP_TASK_SPEC_REQUIRED:'握手缺少当前任务规格',TASK_START_CONDITIONS_UNMET:'前置条件或规格影响未满足',NATIVE_EXECUTION_DISABLED:'项目原生执行未启用',NATIVE_CAPABILITY_UNVERIFIED:'当前官方版本能力未验证',PATH_ENFORCEMENT_UNAVAILABLE:'要求的路径强隔离不可执行',DISPATCH_HELD:'目标变更等待用户决定',WORKFLOW_PREPARATION_FAILED:'准备失败，需要查看固定诊断',DISPATCH_FORBIDDEN:'当前角色或项目授权未通过'};
+const reasons:Readonly<Record<string,string>>={MODEL_SELECTION_UNRESOLVED:'模型请求尚未解析',MODEL_SELECTION_UNAVAILABLE:'官方模型选择未通过',COST_ENFORCEMENT_UNAVAILABLE:'费用上限尚无官方执行证明',DISPATCH_CONCURRENCY_EXCEEDED:'并发容量已占用（含未知工厂/消息）',DISPATCH_ATTEMPTS_EXCEEDED:'尝试预算已达到',WORKSPACE_CONFLICT:'工作目录被未决执行占用',STARTUP_REQUIRED:'当前版本启动握手未完成',STARTUP_TASK_SPEC_REQUIRED:'握手缺少当前任务规格',TASK_START_CONDITIONS_UNMET:'前置条件或规格影响未满足',NATIVE_EXECUTION_DISABLED:'项目原生执行未启用',NATIVE_CAPABILITY_UNVERIFIED:'当前适配器缺少所需能力',PATH_ENFORCEMENT_UNAVAILABLE:'要求的路径强隔离不可执行',DISPATCH_HELD:'目标变更等待用户决定',WORKFLOW_PREPARATION_FAILED:'准备失败，需要查看固定诊断',DISPATCH_FORBIDDEN:'当前角色或项目授权未通过'};
 
 /** 监督投影只读；旧候选的原因必须匹配当前任务双版本，不触发派发或修复。 */
 export function roleSupervisionState(store:Store,projectId:string,roleId:string){

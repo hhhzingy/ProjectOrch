@@ -29,7 +29,7 @@ function fixture(t) {
   const leaseDirectory = path.join(f.dir, 'leases'); fs.mkdirSync(leaseDirectory); lease = NativeSessionLease.acquire(leaseDirectory, f.session);
   const registry = new NativeCompatibilityRegistry();
   const identity = { harnessId: 'zcode', version: 'synthetic-host-only', executableSha256: createHash('sha256').update(fs.readFileSync(executable)).digest('hex'), bundleSha256: null, adapterProtocol: 'synthetic-mcp-pipes-v1', route: 'official_extension' };
-  const prove = capabilities => registry.recordTrustedProbe({ identity, probeId: 'synthetic-only', evidenceSha256: 'c'.repeat(64), capabilities }); prove({ roleTools: 'verified' });
+  const prove = capabilities => { registry.setAdapterCapabilities(identity, Object.keys(capabilities).filter(c => capabilities[c] === 'verified')); registry.recordTrustedProbe({ identity, probeId: 'synthetic-only', evidenceSha256: 'c'.repeat(64), capabilities }); }; prove({ roleTools: 'verified' });
   const options = { bindingId: 'binding', bindingEpoch: 1, session: f.session, nativeOwner: lease, executable, identity, registry, now: () => clock, isKernelOwner: () => owner, currentExecutionId: () => execution, assertIsolation: () => { if (!isolation) throw new Error('SYNTHETIC_PRIVATE_GUARD_ERROR'); } };
   const host = (overrides = {}) => { const result = SessionToolHost.create(f.store, { ...options, ...overrides }); hosts.push(result); return result; };
   const start = async () => { const id = f.prepare(); const run = f.coordinator.run(id); await tick(); execution = 'native-turn'; return { id, run }; };

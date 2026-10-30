@@ -47,6 +47,7 @@ test('workflowFactory装配闭环：startKernel→意图→pump→coordinator→
   // 合成驱动：立即返回completed
   const registry = new NativeCompatibilityRegistry();
   const identity = { harnessId: 'zcode', version: 'synthetic', executableSha256: 'a'.repeat(64), bundleSha256: null, adapterProtocol: 'synthetic-v1', route: 'official_cli' };
+  registry.setAdapterCapabilities(identity, ['textInput', 'resume', 'historyRead', 'roleTools']);
   registry.recordTrustedProbe({ identity, probeId: 'synthetic', evidenceSha256: 'b'.repeat(64), capabilities: { textInput: 'verified', resume: 'verified', historyRead: 'verified', roleTools: 'verified' } });
   const session = { harnessId: 'zcode', hostId: 'h', profileId: 'probe', nativeConversationId: 'sess-wf' };
   const driver = {

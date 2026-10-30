@@ -14,6 +14,7 @@ const secret = issueAgentCredential(store, 'binding', 1, { isolation: 'verified_
 const principal = authenticateAgentCredential(store, secret, 250);
 const identity = { harnessId: 'zcode', version: 'synthetic-only', executableSha256: 'a'.repeat(64), bundleSha256: null, adapterProtocol: 'synthetic-driver-v1', route: 'official_cli' };
 const registry = new NativeCompatibilityRegistry();
+registry.setAdapterCapabilities(identity, ['textInput', 'resume', 'historyRead', 'roleTools', 'nativeCancel']);
 registry.recordTrustedProbe({ identity, probeId: 'synthetic-only', evidenceSha256: 'b'.repeat(64), capabilities: { textInput: 'verified', resume: 'verified', historyRead: 'verified', roleTools: 'verified', nativeCancel: 'verified' } });
 const driver = {
   session, ownerKey: 'synthetic-crash-owner', workspaceRoot: root, registry,

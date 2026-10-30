@@ -39,7 +39,7 @@ async function waitForTurn(adapter) {
   throw new Error('synthetic turn did not start');
 }
 
-test('ZCode生产入口复用单owner且总是同ID resume；未验证版本不外发', async t => {
+test('ZCode生产入口复用单owner且同ID resume；缺可信驱动配置不外发', async t => {
   const { adapter, options } = zcode(t);
   const receipt = await adapter.runTurn('SYNTHETIC_OK', 'SYNTHETIC_OK');
   assert.equal(receipt.status, 'completed'); assert.equal(receipt.sessionId, ref.nativeConversationId); assert.ok(receipt.turnId);
@@ -113,7 +113,7 @@ test('Codex仅同线程同turn历史终态可解锁unknown；错历史和工具i
   assert.equal(wrong.phase, 'unknown');
 });
 
-test('Codex无匹配兼容证据不连接，历史投影禁止伪造原生条目ID', async t => {
+test('Codex缺可信驱动配置不连接，历史投影禁止伪造原生条目ID', async t => {
   const { adapter, options } = codex(t);
   const missing = new CodexAdapter({ ...options, compatibility: undefined });
   await assert.rejects(missing.startThread(), /NATIVE_COMPATIBILITY_PROBE_REQUIRED/); assert.equal(missing.connected, false);
@@ -125,14 +125,14 @@ test('Codex无匹配兼容证据不连接，历史投影禁止伪造原生条目
   assert.equal(first.revision, later.revision);
 });
 
-test('ZCode业务入口更新字节后先禁用；spawn前失败不冒充unknown执行', async t => {
+test('ZCode在途实例遇到程序更新要求重启；spawn前失败不冒充unknown执行', async t => {
   const { options, dir } = zcode(t);
   const bundle = path.join(dir, 'own-fixture.mjs'); fs.copyFileSync(worker, bundle);
   const compatibility = registryFor('zcode', bundle, zcodeTextAdapterProtocol);
   const adapter = new ZcodeAdapter({ ...options, bundle, compatibility }, ref);
   assert.equal((await adapter.runTurn('before', '')).status, 'completed');
   fs.appendFileSync(bundle, '\n// test fixture update\n');
-  await assert.rejects(adapter.runTurn('after', ''), /NATIVE_COMPATIBILITY_PROBE_REQUIRED/);
+  await assert.rejects(adapter.runTurn('after', ''), /NATIVE_RUNTIME_CHANGED_RESTART_REQUIRED/);
   assert.equal(adapter.phase, 'idle'); adapter.close();
   const missingCwd = new ZcodeAdapter({ ...options, cwd: path.join(dir, 'missing-cwd') }, ref);
   const failure = await missingCwd.runTurn('not-sent', '');
@@ -155,12 +155,12 @@ test('Codex恢复核验ID和空闲状态；缺启动回执按deadline返回unkno
   assert.equal(turnsSent(log), 1);
 });
 
-test('Codex每次外发重新查能力；明确不支持与未探测不能沿用缓存', async t => {
+test('Codex每次外发核对实际驱动能力；已撤销能力不能沿用缓存', async t => {
   const { adapter, options, log } = codex(t);
   await adapter.startThread();
   const { registry, identity } = options.compatibility;
-  registry.recordTrustedProbe({ identity, probeId: 'synthetic-revoke', evidenceSha256: 'b'.repeat(64), capabilities: { textInput: 'unsupported' } });
+  registry.setAdapterCapabilities(identity, []);
   await assert.rejects(adapter.runTurn('not-sent', ''), /NATIVE_CAPABILITY_UNSUPPORTED/);
-  await assert.rejects(adapter.readHistory(), /NATIVE_COMPATIBILITY_PROBE_REQUIRED/);
+  await assert.rejects(adapter.readHistory(), /NATIVE_CAPABILITY_UNSUPPORTED/);
   assert.equal(turnsSent(log), 0);
 });
