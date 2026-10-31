@@ -33,19 +33,19 @@ importers:
   apps/kernel:
     dependencies:
       '@projectorch/adapter-contract':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../../packages/adapter-contract
       '@projectorch/contracts':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../../packages/contracts
       '@projectorch/domain':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../../packages/domain
       '@projectorch/persistence':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../../packages/persistence
       '@projectorch/runtime':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../../packages/runtime
 
   apps/web: {}
@@ -55,7 +55,7 @@ importers:
   packages/adapter-mock:
     dependencies:
       '@projectorch/adapter-contract':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../adapter-contract
 
   packages/contracts:
@@ -70,16 +70,16 @@ importers:
   packages/domain:
     dependencies:
       '@projectorch/contracts':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../contracts
       '@projectorch/persistence':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../persistence
 
   packages/persistence:
     dependencies:
       '@projectorch/contracts':
-        specifier: 0.1.0-alpha.2
+        specifier: 0.1.0-alpha.3
         version: link:../contracts
 
   packages/runtime: {}

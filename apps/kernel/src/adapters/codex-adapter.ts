@@ -135,7 +135,7 @@ export class CodexAdapter {
     await peer.notify("initialized", {});
     return peer;
   }
-  async #open(threadId: string | null, createArgs: Params = {}, assertCanSend?:()=>void): Promise<{ readonly threadId: string }> {
+  async #open(threadId: string | null, createArgs: Params = {}, assertCanSend?:()=>void): Promise<{ readonly threadId: string; readonly model?: string }> {
     if (this.#phase !== "disconnected") throw new Error("ADAPTER_OWNER_NOT_IDLE");
     this.#assertCapability(threadId ? "resume" : "textInput");
     this.#scope(threadId ?? "pending-create");
@@ -155,7 +155,7 @@ export class CodexAdapter {
         if ((thread.status !== undefined && !idle) || (!Array.isArray(turns) && !idle) || (Array.isArray(turns) && turns.some(t => !terminal(asRecord(t).status)))) throw new Error("RESUME_EXECUTION_UNPROVEN");
       }
       this.#phase = "idle";
-      return { threadId: thread.id };
+      return { threadId: thread.id, ...(typeof response.model==='string'?{model:response.model}:{}) };
     } catch (error) {
       this.#phase = this.#peer || this.#lease ? "unknown" : "disconnected";
       if (this.#peer) await this.#peer.close().catch(() => undefined);
@@ -163,7 +163,7 @@ export class CodexAdapter {
       throw error;
     }
   }
-  startThread(createArgs: Params = {},assertCanSend?:()=>void): Promise<{ readonly threadId: string }> { return this.#open(null, createArgs,assertCanSend); }
+  startThread(createArgs: Params = {},assertCanSend?:()=>void): Promise<{ readonly threadId: string; readonly model?: string }> { return this.#open(null, createArgs,assertCanSend); }
   resumeThread(threadId: string): Promise<{ readonly threadId: string }> {
     if (!token(threadId)) return Promise.reject(new Error("INVALID_THREAD_ID"));
     return this.#open(threadId);

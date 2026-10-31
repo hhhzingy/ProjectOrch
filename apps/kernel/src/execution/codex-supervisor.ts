@@ -10,6 +10,7 @@ import { execFileSync } from "node:child_process";
 import type { SessionRef } from "@projectorch/adapter-contract";
 import { NativeCompatibilityRegistry, type NativeIdentity } from "../native/compatibility.js";
 import { NativeSessionLease } from "../native/session-lease.js";
+import type {NativeModelSelection} from '../native/model-selection.js';
 
 export interface CodexThreadFactoryOptions extends ExecutionTimeoutOptions {
   readonly executable: string;
@@ -69,7 +70,8 @@ export class CodexThreadFactory {
    * DR07：runTurn回执的threadId与startThread不符、status非completed、或marker未观察→如实failed/unknown，不产出成功observed。
    */
   async createThreadWithCharter(input: {
-    readonly adapter: { startThread(args?: unknown,guard?:()=>void): Promise<{ readonly threadId: string }>; runTurn(text: string, marker: string, timeoutMs?: number,onStarted?:undefined,guard?:()=>void): Promise<{ readonly threadId: string; readonly turnId?:string|null; readonly markerSeen: boolean; readonly status: string;readonly diagnostics?:ExecutionDiagnostic }> ; close(): Promise<void> | void };
+    readonly adapter: { startThread(args?: unknown,guard?:()=>void): Promise<{ readonly threadId: string;readonly model?:string }>; runTurn(text: string, marker: string, timeoutMs?: number,onStarted?:undefined,guard?:()=>void,selection?:NativeModelSelection): Promise<{ readonly threadId: string; readonly turnId?:string|null; readonly markerSeen: boolean; readonly status: string;readonly diagnostics?:ExecutionDiagnostic }> ; close(): Promise<void> | void };
+    readonly modelSelection?:NativeModelSelection|undefined;
     readonly assertCanSend?:()=>void;
     readonly charter: string;
     readonly marker: string;
@@ -82,12 +84,13 @@ export class CodexThreadFactory {
     try {
       input.assertCanSend?.();
       input.onStep({ step: "create-thread", state: "sent", detail: null, at: Date.now() });
-      const { threadId } = await input.adapter.startThread({},input.assertCanSend);
+      const { threadId,model } = await input.adapter.startThread(input.modelSelection?.modelId?{model:input.modelSelection.modelId}:{},input.assertCanSend);
       input.onStep({ step: "create-thread", state: "observed", detail: threadId, at: Date.now() });
       creationObserved=true;
+      if(input.modelSelection?.modelId&&model!==input.modelSelection.modelId)throw new Error('FACTORY_MODEL_SELECTION_NOT_APPLIED');
       input.onStep({ step: "deliver-charter", state: "sent", detail: null, at: Date.now() });
       input.assertCanSend?.();
-      const turn = await input.adapter.runTurn(input.charter, input.marker, executionTimeout(this.#options),undefined,input.assertCanSend);
+      const turn = await input.adapter.runTurn(input.charter, input.marker, executionTimeout(this.#options),undefined,input.assertCanSend,input.modelSelection);
       // DR07：错线程/失败状态/无marker→如实判定，不把错误结果标observed
       if (turn.threadId !== threadId) {
         input.onStep({ step: "deliver-charter", state: "failed", detail: `THREAD_MISMATCH:${turn.threadId}!=${threadId}`, at: Date.now() });

@@ -82,6 +82,7 @@
     "apps/kernel/src/native/stdio-peer.ts",
     "apps/kernel/src/native/verified-zcode-session.ts",
     "apps/kernel/src/native/zcode-cli-result.ts",
+    "apps/kernel/src/native/zcode-factory-session.ts",
     "apps/kernel/src/native/zcode-history-observation.ts",
     "apps/kernel/src/native/zcode-text-process.ts",
     "apps/kernel/src/native/zcode-text-session.ts",
@@ -347,6 +348,7 @@
     "tests/security/auth/execution-fixture.mjs",
     "tests/security/auth/execution-reconcile.test.mjs",
     "tests/security/auth/factory-admission.test.mjs",
+    "tests/security/auth/factory-model-selection.test.mjs",
     "tests/security/auth/factory-native-boundary.test.mjs",
     "tests/security/auth/fixtures/integration-crash-worker.mjs",
     "tests/security/auth/fixtures/provision-crash-worker.mjs",
@@ -493,5 +495,5 @@
     ".github/**": "替换为最小Windows离线CI",
     "其他未明确列出文件": "默认排除，不沿目录自动新增"
   },
-  "approvedDeltaFromPublicCommit": "0a8988de1959b6f128d64ba80c7114ec54ca9e45"
+  "approvedDeltaFromPublicCommit": "513484c816768c35f2f4be69b041ab8f9b49476b"
 }

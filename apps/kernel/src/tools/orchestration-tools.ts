@@ -289,19 +289,20 @@ export function projectBootstrapOrchestration(store: Store, factory: FactoryAdap
               db.prepare("UPDATE roles SET binding_state='provisioning' WHERE id=? AND project_id=?").run(role.roleId, projectId);
             });
             recordStep(store,operationId,{step:`role:${role.roleId}:binding-registration`,state:'observed',detail:JSON.stringify({bindingId:`bnd-${role.roleId}`,sessionRef:session,charterDelivered:outcome.charterDelivered!==false,nativeTurnId:outcome.nativeTurnId}),at:now()},now());
+            if(outcome.charterDelivered===false){
+              // 确定未送达章程的部分创建不注入业务工具、不握手；保留实际会话及保守写预约。
+              recordStep(store,operationId,{step:`role:${role.roleId}:charter-not-delivered`,state:'failed',detail:'会话已登记；章程未送达，保持provisioning，不注入业务工具或创建替代会话',at:now()},now());
+              writeScope?.complete(outcome);
+              continue;
+            }
             // T110：会话内角色工具注入点（application写工作区.zcode/mcp.json——角色凭据指向内核入口）
             // 复核批次二修复：注入目录必须与attempt执行目录一致（workspaceForTask(projectId,roleId,binding)）——此前args.workspaceRoot('.'，解析为内核进程cwd)导致任务轮cwd无.zcode/config.json、工具被宿主插件淹没
             try {
               if(writeScope){writeScope.assertScope();writeScope.runBindingTools(()=>hooks?.onBoundSession?.(`bnd-${role.roleId}`, role.roleId, harnessId, workspaceRoot));}
               else if(hooks?.onBoundSession){withBindingToolsWrite(store,{projectId,roleId:role.roleId,operationId,bindingId:`bnd-${role.roleId}`,bindingEpoch:1,workspaceRoot,admission:factoryAdmissionGuard(store,principal,projectId,role.roleId,'project.bootstrap',operationId,undefined,'settlement'),now},()=>hooks.onBoundSession?.(`bnd-${role.roleId}`,role.roleId,harnessId,workspaceRoot));}
             } catch(error) { writeScope?.fail(error,true);recordStep(store, operationId, { step: `role:${role.roleId}:tool-entry-inject-failed`, state: 'unknown', detail: null, at: now() }, now()); continue; }
-            if (outcome.charterDelivered === false) {
-              // 部分成功：原生会话/线程真实存在并登记，但章程未观察送达（如Codex额度耗尽）——不握手，保持provisioning可恢复
-              recordStep(store, operationId, { step: `role:${role.roleId}:charter-not-delivered`, state: 'failed', detail: '会话已登记；章程轮未观察送达——绑定保持provisioning待恢复', at: now() }, now());
-            } else {
-              completeBindingStartupAck(st, projectId as string, role.roleId);
-              recordStep(store, operationId, { step: `role:${role.roleId}:startup-ack`, state: 'observed', detail: 'binding ready（六类版本=DB当前值）', at: now() }, now());
-            }
+            completeBindingStartupAck(st, projectId as string, role.roleId);
+            recordStep(store, operationId, { step: `role:${role.roleId}:startup-ack`, state: 'observed', detail: 'binding ready（六类版本=DB当前值）', at: now() }, now());
             writeScope?.complete(outcome);
             recordStep(store, operationId, { step: `role:${role.roleId}:created+bound`, state: 'observed', detail: outcome.nativeSessionId, at: now() }, now());
           } catch (error) {

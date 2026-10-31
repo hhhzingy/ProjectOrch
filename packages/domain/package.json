@@ -1,6 +1,6 @@
 {
   "name": "@projectorch/domain",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "private": true,
   "type": "module",
   "exports": {
@@ -114,8 +114,8 @@
     }
   },
   "dependencies": {
-    "@projectorch/persistence": "0.1.0-alpha.2",
-    "@projectorch/contracts": "0.1.0-alpha.2"
+    "@projectorch/persistence": "0.1.0-alpha.3",
+    "@projectorch/contracts": "0.1.0-alpha.3"
   },
   "license": "Apache-2.0",
   "repository": {

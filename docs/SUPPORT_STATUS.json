@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-10-30",
+  "asOf": "2026-10-31",
   "upstreamSourceSha256": "1eb71b23a7f2b751657977803d2911d783085e5d714773f63d96af53c1ac2c98",
   "publicationReadiness": "ALPHA_SUBSET_ACCEPTED_PENDING_PUBLICATION",
   "basicNativeAcceptance": "ALPHA_SUBSET_ACCEPTED",
@@ -115,5 +115,5 @@
   "runtimeVersionPolicy": "NO_VERSION_ALLOWLIST",
   "testCoverageNote": "identities 仅记录历史上实际测试的构建、版本和逐能力结论，不是运行白名单。未测版本允许使用现有适配器能力，不自动变成 verified；实际接口失败按真实结果处理。历史源码哈希及证据指纹保持原值。",
   "historicalSourceDelta": "与19dc仅4处安全诊断透传，业务/身份/权限/终态语义不变；5ada到1eb只删除测试的两条无用私有导入。各原生证据保留实际subject，不重绑旧记录。",
-  "currentSourceDelta": "alpha.2取消版本/历史哈希白名单；测试状态与实际适配能力分离，正常重启可载入新版。历史模型测试不重绑到本源码。"
+  "currentSourceDelta": "alpha.3支持工厂首轮严格模型选择；新增失败路径覆盖。真实模型实测见Release，不继承历史证据到新源码。"
 }

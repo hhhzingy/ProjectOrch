@@ -1,14 +1,14 @@
 {
   "name": "@projectorch/kernel",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@projectorch/runtime": "0.1.0-alpha.2",
-    "@projectorch/contracts": "0.1.0-alpha.2",
-    "@projectorch/persistence": "0.1.0-alpha.2",
-    "@projectorch/adapter-contract": "0.1.0-alpha.2",
-    "@projectorch/domain": "0.1.0-alpha.2"
+    "@projectorch/runtime": "0.1.0-alpha.3",
+    "@projectorch/contracts": "0.1.0-alpha.3",
+    "@projectorch/persistence": "0.1.0-alpha.3",
+    "@projectorch/adapter-contract": "0.1.0-alpha.3",
+    "@projectorch/domain": "0.1.0-alpha.3"
   },
   "license": "Apache-2.0",
   "repository": {

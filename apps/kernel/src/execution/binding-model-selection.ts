@@ -11,6 +11,10 @@ export function bindingForSession(store:Store,session:SessionRef):string{
 export function bindingModelSelection(store:Store,bindingId:string):NativeModelSelection|null{
  const row=store.db.prepare('SELECT r.model_requested_json,r.model_resolved_json FROM role_bindings b JOIN roles r ON r.id=b.role_id AND r.project_id=b.project_id WHERE b.id=? AND b.ended_at IS NULL').get(bindingId);
  if(!row)throw new NativeRpcError('BINDING_NOT_FOUND','not_sent');
+ return roleModelSelection(row);
+}
+/** 工厂创建前也使用同一严格模型合同；角色尚未绑定时不要求虚构binding。 */
+export function roleModelSelection(row:Readonly<Record<string,unknown>>):NativeModelSelection|null{
  if(!row.model_requested_json)return null;
  if(!row.model_resolved_json)throw new NativeRpcError('MODEL_SELECTION_UNRESOLVED','not_sent');
  const value=JSON.parse(String(row.model_resolved_json)) as NativeModelSelection;

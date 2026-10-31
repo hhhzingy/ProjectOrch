@@ -29,6 +29,14 @@ function fixture(t) {
 
 const controlPrincipal = { kind: 'control_entry', principalId: 'control-'+ 'a'.repeat(64), projectId: 'p1', permissions: ['project.bootstrap', 'message.send', 'task.dispatch'] };
 
+test('工厂部分创建但章程未送达：保留原ID与provisioning，不注入工具、不握手、不重建',async t=>{
+ const {store}=fixture(t);let calls=0,injected=0;
+ const factory={ensureBoundSession:async input=>{calls++;input.onStep({step:'create-session',state:'observed',detail:'same-empty-session',at:Date.now()});return {sessionRef:{harnessId:'zcode',hostId:'h',profileId:'p',nativeConversationId:'same-empty-session',nativeWorkspaceId:input.workspaceRoot},nativeSessionId:'same-empty-session',nativeTurnId:null,charterDelivered:false};}};
+ const bootstrap=projectBootstrapOrchestration(store,factory,x=>x,{onBoundSession(){injected++;}}),args={objective:'严格模型被拒的空会话',roles:[{roleId:'partial-model',harnessId:'zcode'}]};const result=bootstrap(store,controlPrincipal,args);await new Promise(r=>setImmediate(r));
+ assert.equal(injected,0);assert.equal(store.db.prepare("SELECT binding_state FROM roles WHERE id='partial-model'").get().binding_state,'provisioning');assert.equal(store.db.prepare("SELECT native_conversation_id FROM sessions WHERE id='sessrow-partial-model'").get().native_conversation_id,'same-empty-session');const op=readOperation(store,result.payload.operationId);assert.ok(op.steps.some(s=>s.step==='role:partial-model:charter-not-delivered'&&s.state==='failed'));assert.ok(!op.steps.some(s=>s.step.endsWith('tool-entry-inject-failed')||s.step.endsWith('startup-ack')));
+ bootstrap(store,controlPrincipal,args);await new Promise(r=>setImmediate(r));assert.equal(calls,1);assert.equal(injected,0);
+});
+
 test('消息建会话后工具注入失败，重放修复同绑定并补原消息一次；暂停/撤销/未知不能绕过',async t=>{
  for(const mode of ['recover','pause','revoke','unknown'])await t.test(mode,async inner=>{
   const {store}=fixture(inner);store.db.exec("INSERT INTO roles(id,project_id,name,charter,permission_profile,desired_state,binding_state,revision) VALUES('recover-message','p1','r','charter','team','enabled','unbound',1)");let calls=0,broken=true;

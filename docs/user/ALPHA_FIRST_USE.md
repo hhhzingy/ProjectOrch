@@ -25,3 +25,6 @@ Web可看角色、Harness、模型偏好和有效观察、当前任务/等待原
 任务执行先task.read；draft/ready先按当前entity revision和specRevision认领同一attempt，再读active后提问/登记/提交。原生attempt running本身不等于业务任务已领取。question.ask须业务成功返回真实questionId后才report.wait，不能把工具传输completed当业务成功。
 
 未知外部结果按[运行与恢复](WINDOWS_CANDIDATE_GUIDE.md)保留原ID核对。不要重发未知消息、再建替代团队、清锁或用数据库改写绕过。关闭/重启保持数据目录和项目，卸载只删除自己安装的程序目录，不删除用户项目/数据/官方历史。
+
+
+alpha.3：指定模型可用于新会话首轮，选择失败不回落默认模型。首轮ZCode采用同一官方连接的空会话→模型设置/读回→同ID执行章程及精确终态核对，不依赖空会话跨进程持久化。模型权益及网络失败据实报告，不承诺任意模型可用。

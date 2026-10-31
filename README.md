@@ -1,4 +1,4 @@
-# ProjectOrch 0.1.0-alpha.2
+# ProjectOrch 0.1.0-alpha.3
 
 本地多Harness协作内核（Local Kernel）：AI在Codex、ZCode聊天中通过MCP建立角色、分工和交互；用户主要监督任务、模型与进度，在Web答题、调整偏好或暂停。
 
@@ -32,3 +32,6 @@ Windows普通用户、Node.js 24.22.0。源码不含运行时/Harness；Windows 
 SOURCE_MANIFEST.json记录各文件和上游源码hash；产品逻辑保持上游字节，许可/版本/干净文档和支持数据是明确变换。排除私有planning/reports、认证、聊天、数据库、截图和work，不继承内部DONE/PASS。CI模板不是云CI已运行的证明。基本Alpha子集的原生验收已独立确认；最终公开件由负责人核对后按既有授权发布。
 
 最小持续集成（CI）命令：`npm ci --ignore-scripts` → `npm run build` → `npm run typecheck` → `npm run test:offline`，Node.js 24.22.0、Windows、PROJECTORCH_NATIVE_TESTS=0。仓库工作流使用固定Action提交；本地验证不冒称云CI已运行。
+
+
+alpha.3：指定模型可用于新会话首轮，选择失败不回落默认模型。首轮ZCode采用空会话→官方模型设置/读回→同ID执行章程。模型权益及网络失败据实报告，不承诺任意模型可用。

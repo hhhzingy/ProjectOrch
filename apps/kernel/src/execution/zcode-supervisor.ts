@@ -61,7 +61,7 @@ export interface FactoryOperationStep {
 }
 
 export interface FactoryOutcome {
-  readonly receipt: ZCodeTextProcessReceipt;
+  readonly receipt: ZCodeTextProcessReceipt | {readonly protocol:'official_rpc';readonly sessionId:string;readonly turnId:string;readonly status:'completed';readonly response:string;readonly exitConfirmed:true};
   readonly sessionRef: SessionRef;
   readonly processEpoch: string;
   readonly nativeSessionId: string;
@@ -123,6 +123,7 @@ export class ZcodeSessionFactory {
     readonly hostId: string;
     readonly profileId: string;
     readonly onStep: (step: FactoryOperationStep) => void;
+    readonly modelSelection?:NativeModelSelection|undefined;
   }): Promise<FactoryOutcome> {
     this.assertCapabilities();
     // 缺目录是确定未发送，不能在CLI已创建会话后才发现本地前置不满足。
@@ -134,6 +135,7 @@ export class ZcodeSessionFactory {
     env.ZCODE_PROCESS_LABEL = `projectorch-factory-${processEpoch.slice(0, 8)}`;
     env.NO_COLOR = "1";
     const options: ZCodeTextProcessOptions = { executable: this.#options.executable, bundle: this.#options.bundle, cwd: input.workspaceRoot, env, ...(this.#options.timeoutMs !== undefined ? { timeoutMs: this.#options.timeoutMs } : {}) };
+    if(input.modelSelection){const {createSelectedZcodeSession}=await import('../native/zcode-factory-session.js');return createSelectedZcodeSession(options,this.#options.leaseDirectory,{...input,modelSelection:input.modelSelection});}
     let lease: NativeSessionLease | undefined;
     try {
       input.onStep({ step: "create-session", state: "sent", detail: null, at: Date.now() });

@@ -35,7 +35,7 @@ import { ensureBindingWorkspace, bindingWorkspaceDirectory } from '../execution/
 import { readProjectPolicy } from '../auth/project-policy.js';
 import { toolAction } from '../tools/gateway-tools.js';
 import { mcpToolEntries } from '../tools/mcp-catalog.js';
-import { bindingForSession,bindingModelSelection } from '../execution/binding-model-selection.js';
+import { bindingForSession,bindingModelSelection,roleModelSelection } from '../execution/binding-model-selection.js';
 import { applyZcodeModelSelection } from '../native/model-selection.js';
 import {readNativeConversation} from '../native/conversation-reader.js';
 import {recoverInterruptedCodexMessage} from '../execution/message-negative-recovery.js';
@@ -312,8 +312,11 @@ export async function startApplication(dataDirectory: string, options: StartAppl
     async ensureBoundSession(input) {
       const originalGuard=input.assertCanSend,originalStep=input.onStep;input={...input,assertCanSend:()=>{if(applicationStopping)throw new NativeRpcError('KERNEL_STOPPING','not_sent');originalGuard();},onStep:s=>{if(!observationDetached)originalStep(s);}};
       input.assertCanSend();
-        const preference=rt.store.db.prepare('SELECT model_requested_json,model_preference_revision FROM roles WHERE id=? AND project_id=?').get(input.roleId,input.projectId);
-      if(preference?.model_requested_json)throw new NativeRpcError('MODEL_FACTORY_SELECTION_NOT_VERIFIED','not_sent');
+        const preference=rt.store.db.prepare('SELECT model_requested_json,model_resolved_json,model_preference_revision FROM roles WHERE id=? AND project_id=?').get(input.roleId,input.projectId);
+      if(!preference)throw new NativeRpcError('ROLE_NOT_FOUND','not_sent');
+      const selection=roleModelSelection(preference as {model_requested_json:unknown;model_resolved_json:unknown});
+      const selectedRevision=Number(preference.model_preference_revision),selectionGuard=input.assertCanSend;
+      input={...input,assertCanSend:()=>{selectionGuard();const current=rt.store.db.prepare('SELECT model_preference_revision FROM roles WHERE id=? AND project_id=?').get(input.roleId,input.projectId);if(current?.model_preference_revision!==selectedRevision)throw new NativeRpcError('MODEL_SELECTION_CONFIG_CHANGED','not_sent');}};
       // 双Harness工厂分发（场景二）：zcode=官方CLI持久会话；codex=官方app-server线程
       if (input.harnessId === 'codex') {
         if (!options.native?.codex) throw new NativeRpcError('CODEX_RUNTIME_NOT_CONFIGURED', 'not_sent');
@@ -329,8 +332,12 @@ export async function startApplication(dataDirectory: string, options: StartAppl
         try {
           const charterFactory = new CodexThreadFactory({ executable: options.native.codex.executable, cwd: codexEnv.cwd, env: codexEnv.env, leaseDirectory: options.native.codex.leaseDirectory, registry, ...(options.native.codex.timeoutMs !== undefined ? { timeoutMs: options.native.codex.timeoutMs } : {}) });
           const marker = `CHARTER_OK_${input.roleId}`;
-          const outcome = await charterFactory.createThreadWithCharter({ adapter, assertCanSend:input.assertCanSend, charter: `${input.charter}\n\n收到本章程后只回复：${marker}`, marker, hostId: 'projectorch-local', profileId: 'kernel-codex-factory', onStep: step=>{input.onStep(step);if(step.step==='create-thread'&&step.state==='observed'&&step.detail)input.onStep({step:'session-identity',state:'observed',detail:JSON.stringify({harnessId:'codex',hostId:'projectorch-local',profileId:'kernel-codex-factory',nativeConversationId:step.detail,nativeWorkspaceId:codexEnv.cwd}),at:Date.now()});} });
+          const outcome = await charterFactory.createThreadWithCharter({ adapter, modelSelection:selection??undefined,assertCanSend:input.assertCanSend, charter: `${input.charter}\n\n收到本章程后只回复：${marker}`, marker, hostId: 'projectorch-local', profileId: 'kernel-codex-factory', onStep: step=>{input.onStep(step);if(step.step==='create-thread'&&step.state==='observed'&&step.detail)input.onStep({step:'session-identity',state:'observed',detail:JSON.stringify({harnessId:'codex',hostId:'projectorch-local',profileId:'kernel-codex-factory',nativeConversationId:step.detail,nativeWorkspaceId:codexEnv.cwd}),at:Date.now()});} });
           const sessionRef={...outcome.sessionRef,nativeWorkspaceId:codexEnv.cwd};
+          if(selection?.modelId){
+            const {recordModelEffective}=await import('@projectorch/domain/roles');
+            recordModelEffective(rt.store,input.projectId,input.roleId,{modelId:selection.modelId,providerId:null,observedAt:Date.now(),basis:'session-authoritative'},selectedRevision);
+          }
           input.onStep({step:'session-identity',state:'observed',detail:JSON.stringify(sessionRef),at:Date.now()});
           input.onStep({step:'charter-execution',state:'observed',detail:outcome.nativeTurnId,at:Date.now()});
           return { sessionRef, nativeSessionId: outcome.nativeThreadId, nativeTurnId: outcome.nativeTurnId, charterDelivered: true };
@@ -338,7 +345,7 @@ export async function startApplication(dataDirectory: string, options: StartAppl
           const message = String((error as Error).message);
           // 部分成功语义：线程已真实创建（adapter.threadId权威观察）但章程轮失败（如额度耗尽）→登记线程、charterDelivered=false
           const threadId = adapter.threadId;
-          if (threadId && /FACTORY_TURN_|FACTORY_MARKER|MARKER_NOT_OBSERVED|FACTORY_THREAD_MISMATCH/.test(message)) {
+          if (threadId && /FACTORY_TURN_|FACTORY_MARKER|MARKER_NOT_OBSERVED|FACTORY_THREAD_MISMATCH|FACTORY_MODEL_SELECTION_NOT_APPLIED|MODEL_SELECTION_CONFIG_CHANGED/.test(message)) {
             input.onStep({ step: 'thread-partial', state: 'failed', detail: message.slice(0, 120), at: Date.now() });
             const sessionRef={harnessId:'codex',hostId:'projectorch-local',profileId:'kernel-codex-factory',nativeConversationId:threadId,nativeWorkspaceId:codexEnv.cwd};
             input.onStep({step:'session-identity',state:'observed',detail:JSON.stringify(sessionRef),at:Date.now()});
@@ -353,7 +360,18 @@ export async function startApplication(dataDirectory: string, options: StartAppl
       if (!options.native?.zcode) throw new NativeRpcError('NATIVE_ENVIRONMENT_NOT_CONFIGURED', 'not_sent');
       const { ZcodeSessionFactory } = await import("../execution/zcode-supervisor.js");
       const f = new ZcodeSessionFactory({ executable: options.native.zcode.executable, bundle: options.native.zcode.bundle, env: options.native.zcode.env, leaseDirectory: options.native.zcode.leaseDirectory, registry, ...(options.native.zcode.timeoutMs !== undefined ? { timeoutMs: options.native.zcode.timeoutMs } : {}) });
-      const outcome = await f.createSessionWithCharter({ assertCanSend:input.assertCanSend, charter: input.charter, workspaceRoot: input.workspaceRoot, hostId: 'local', profileId: 'orchestration', onStep: input.onStep });
+      let createdZcodeSession:string|null=null;
+      let outcome;
+      try{outcome = await f.createSessionWithCharter({ modelSelection:selection??undefined,assertCanSend:input.assertCanSend, charter: input.charter, workspaceRoot: input.workspaceRoot, hostId: 'local', profileId: 'orchestration', onStep:step=>{input.onStep(step);if(step.step==='create-session'&&step.state==='observed'&&step.detail)createdZcodeSession=step.detail;} });}
+      catch(error){
+        // 确定的首输入前模型选择失败保留真实空会话，不能另建替代；unknown仍交原操作核对。
+        if(createdZcodeSession&&error instanceof NativeRpcError&&error.delivery==='not_sent'){
+          const sessionRef={harnessId:'zcode',hostId:'local',profileId:'orchestration',nativeConversationId:createdZcodeSession,nativeWorkspaceId:input.workspaceRoot};
+          input.onStep({step:'model-selection-failed',state:'failed',detail:error.message,at:Date.now()});
+          return {sessionRef,nativeSessionId:createdZcodeSession,nativeTurnId:null,charterDelivered:false};
+        }
+        throw error;
+      }
       // 执行侧生效模型权威回写（roles.model_effective_json——监督总览"模型生效"真值来源）
       if (outcome.effectiveModel&&!observationDetached&&!rt.store.db.prepare('SELECT 1 FROM role_bindings WHERE project_id=? AND role_id=? AND ended_at IS NULL').get(input.projectId,input.roleId)) {
         try {

@@ -1,5 +1,5 @@
 {
-  "_comment": "路径均为占位。仅官方正常登录，不读/复制认证；精确匹配已有支持身份后仍按当前权限、项目策略和预算放行有据能力；身份漂移/未测能力拒绝。executionTimeoutMs是整个原生轮执行期限，默认15分钟、最多30分钟；timeoutMs是旧兼容别名，双字段冲突拒绝。rpcTimeoutMs独立默认20秒、最多60秒。执行期限不是预算授权，不扩大次数/项目或总窗口。",
+  "_comment": "路径为占位。仅正常官方登录，不复制认证；不按Harness版本限制运行。指定模型须在首次输入前选择并核验，失败不回落默认；执行期限与预算授权独立。",
   "zcode": {
     "executable": "C:/path/to/node.exe",
     "bundle": "C:/path/to/official/zcode.cjs",
