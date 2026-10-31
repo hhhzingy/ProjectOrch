@@ -2,6 +2,8 @@ import {executionTimeout, type ExecutionTimeoutOptions} from './execution-timeou
 import { spawn, type ChildProcessByStdio } from "node:child_process";
 import type { Readable } from "node:stream";
 import { randomUUID } from "node:crypto";
+import type {NativeModelSelection} from './model-selection.js';
+import {prepareZcodeAccountProfile,usesZcodeAccountProfile} from './zcode-account-model-profile.js';
 import { ZCodeCliResultCollector, ZCodeCliResultError, zcodeTextOnlyArgs, type ZCodeCliResult } from "./zcode-cli-result.js";
 
 export interface ZCodeTextProcessOptions extends ExecutionTimeoutOptions {
@@ -11,6 +13,8 @@ export interface ZCodeTextProcessOptions extends ExecutionTimeoutOptions {
   /** 受信启动器白名单；不默认继承宿主认证环境。 */
   readonly env: Readonly<Record<string, string>>;
   readonly timeoutMs?: number;
+  readonly modelSelection?:()=>NativeModelSelection|null;
+  readonly modelProfileDirectory?:string;
 }
 export interface ZCodeTextProcessReceipt {
   readonly result: ZCodeCliResult;
@@ -66,18 +70,21 @@ export class ZCodeTextProcess {
     this.#terminateActive();
     return Object.freeze({ status: "termination_requested", processEpoch: expectedProcessEpoch });
   }
-  async execute(text: string, sessionId: string | null, timeoutMs = executionTimeout(this.#options, "INVALID_CLI_TIMEOUT"), onTurnStarted?: (sessionId: string, turnId: string) => void): Promise<ZCodeTextProcessReceipt> {
+  async execute(text: string, sessionId: string | null, timeoutMs = executionTimeout(this.#options, "INVALID_CLI_TIMEOUT"), onTurnStarted?: (sessionId: string, turnId: string) => void, assertCanSend:()=>void=()=>{},onBeforeSpawn?:()=>void): Promise<ZCodeTextProcessReceipt> {
     if (this.#phase !== "idle") throw new Error("CLI_OWNER_NOT_IDLE");
     executionTimeout({timeoutMs}, "INVALID_CLI_TIMEOUT");
     const args = zcodeTextOnlyArgs(this.#options.bundle, text, sessionId);
+    const selection=this.#options.modelSelection?.();
+    const profile=selection&&usesZcodeAccountProfile(this.#options.env,selection)?prepareZcodeAccountProfile(this.#options.env,this.#options.modelProfileDirectory??this.#options.cwd,selection):null;
+    try{profile?.assertCurrent();assertCanSend();}catch(e){profile?.cleanup();throw e;}
     const collector = new ZCodeCliResultCollector(sessionId, undefined, (nativeSessionId, nativeTurnId) => { this.#telemetry.nativeTurnId = nativeTurnId; onTurnStarted?.(nativeSessionId, nativeTurnId); });
     const processEpoch = randomUUID();
     this.#telemetry = { processEpoch, pid: null, stdoutBytes: 0, frames: 0, lastType: null, exitConfirmed: false, nativeTurnId: null, turnStartedSeen: false };
     this.#phase = "running";
     return new Promise((resolve, reject) => {
       let child: ChildProcessByStdio<null, Readable, Readable>;
-      try { child = spawn(this.#options.executable, [...args], { cwd: this.#options.cwd, env: this.#options.env, stdio: ["ignore", "pipe", "pipe"], windowsHide: true }); }
-      catch { this.#phase = "idle"; this.#telemetry.exitConfirmed = true; reject(new Error("CLI_SPAWN_NOT_SENT")); return; }
+      try { profile?.assertCurrent();assertCanSend();onBeforeSpawn?.();child = spawn(this.#options.executable, [...args], { cwd: this.#options.cwd, env: profile?.env??this.#options.env, stdio: ["ignore", "pipe", "pipe"], windowsHide: true }); }
+      catch { profile?.cleanup();this.#phase = "idle"; this.#telemetry.exitConfirmed = true; reject(new Error("CLI_SPAWN_NOT_SENT")); return; }
       let fault: string | null = null; let stderrBytes = 0; let spawned = false; let settled = false; let stderrTail = "";
       let exitTimer: ReturnType<typeof setTimeout> | undefined;
       const fail = (code: string) => {
@@ -100,6 +107,7 @@ export class ZCodeTextProcess {
         try { collector.push(bytes); Object.assign(this.#telemetry, collector.activity); } catch (error) { fail(error instanceof ZCodeCliResultError ? error.code : "CLI_OUTPUT_FAILED"); }
       });
       child.once("close", (code, signal) => {
+        profile?.cleanup();
         clearTimeout(timer); clearTimeout(exitTimer);
         this.#terminateActive = null;
         if (settled) return;

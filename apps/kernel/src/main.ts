@@ -24,7 +24,7 @@ function loadNativeOptions(dataDirectory: string, explicitPath: string | null): 
   // 必需变量见 docs/config-samples/native-config.example.json——非认证材料）；缺省回退继承当前进程。
   const env: Record<string, string> = {};
   for (const key of ["SystemRoot", "WINDIR", "PATH", "PATHEXT", "COMSPEC", "TEMP", "TMP", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA"]) { const v = process.env[key]; if (v) env[key] = v; }
-  for (const key of ["ZCODE_BUILTIN_PROVIDER_CONFIG_FILE", "ZCODE_PERSONAL_PROVIDER_CONFIG_FILE", "ZCODE_BASE_URL", "ZCODE_ENV", "ZCODE_DATA_BASE_DIR"]) {
+  for (const key of ["ZCODE_BUILTIN_PROVIDER_CONFIG_FILE", "ZCODE_PERSONAL_PROVIDER_CONFIG_FILE", "ZCODE_BASE_URL", "ZCODE_ENV", "ZCODE_DATA_BASE_DIR", "PROJECTORCH_ZCODE_ACCOUNT_PROVIDER"]) {
     const explicit = raw.zcodeEnv?.[key];
     if (typeof explicit === "string" && explicit) env[key] = explicit;
     else { const v = process.env[key]; if (v) env[key] = v; }

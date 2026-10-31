@@ -81,6 +81,7 @@
     "apps/kernel/src/native/session-model-observation.ts",
     "apps/kernel/src/native/stdio-peer.ts",
     "apps/kernel/src/native/verified-zcode-session.ts",
+    "apps/kernel/src/native/zcode-account-model-profile.ts",
     "apps/kernel/src/native/zcode-cli-result.ts",
     "apps/kernel/src/native/zcode-factory-session.ts",
     "apps/kernel/src/native/zcode-history-observation.ts",
@@ -172,6 +173,7 @@
     "docs/config-samples/codex-mcp-entry.toml",
     "docs/config-samples/native-config.example.json",
     "docs/config-samples/zcode-mcp-entry.json",
+    "docs/user/ZCODE_ACCOUNT_MODELS.md",
     "package-lock.json",
     "packages/README.md",
     "packages/adapter-contract/package.json",
@@ -404,6 +406,7 @@
     "tests/security/auth/workflow-consumer.test.mjs",
     "tests/security/auth/workflow-factory.test.mjs",
     "tests/security/auth/workflow-fairness.test.mjs",
+    "tests/security/auth/zcode-account-model-profile.test.mjs",
     "tests/security/auth/zcode-factory.test.mjs",
     "tests/storage/artifact-content.test.mjs",
     "tests/storage/artifacts.test.mjs",
@@ -495,5 +498,5 @@
     ".github/**": "替换为最小Windows离线CI",
     "其他未明确列出文件": "默认排除，不沿目录自动新增"
   },
-  "approvedDeltaFromPublicCommit": "513484c816768c35f2f4be69b041ab8f9b49476b"
+  "approvedDeltaFromPublicCommit": "2c98f338caff09acb16b5270497d3bd3fe6357a8"
 }

@@ -34,4 +34,4 @@ SOURCE_MANIFEST.json记录各文件和上游源码hash；产品逻辑保持上�
 最小持续集成（CI）命令：`npm ci --ignore-scripts` → `npm run build` → `npm run typecheck` → `npm run test:offline`，Node.js 24.22.0、Windows、PROJECTORCH_NATIVE_TESTS=0。仓库工作流使用固定Action提交；本地验证不冒称云CI已运行。
 
 
-alpha.3：指定模型可用于新会话首轮，选择失败不回落默认模型。首轮ZCode采用空会话→官方模型设置/读回→同ID执行章程。模型权益及网络失败据实报告，不承诺任意模型可用。
+alpha.3：指定模型可用于新会话首轮，选择失败不回落默认模型。ZCode账户使用官方CLI隔离模型配置；已真实验证BigModel GLM-5.3-Flash创建与同ID续行。自定义供应商仍采用官方RPC设置/读回。Start Plan桌面可用，独立CLI接入未验证，参见[账户模型配置](docs/user/ZCODE_ACCOUNT_MODELS.md)。

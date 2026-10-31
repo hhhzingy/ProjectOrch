@@ -1,21 +1,13 @@
 {
-  "_comment": "路径为占位。仅正常官方登录，不复制认证；不按Harness版本限制运行。指定模型须在首次输入前选择并核验，失败不回落默认；执行期限与预算授权独立。",
-  "zcode": {
-    "executable": "C:/path/to/node.exe",
-    "bundle": "C:/path/to/official/zcode.cjs",
-    "executionTimeoutMs": 900000
-  },
+  "_comment": "T057/复核批次一：普通启动器原生环境配置样例（main.ts --native 或 <数据目录>/native-config.json）。zcodeEnv 显式传入必需 ZCODE_* 变量（外部宿主如 codex exec 无 Desktop 继承——值从 ZCode 安装环境复制，非认证材料；缺省内核按 SPB_Data 标准布局自动补全）。codex.sharedLogin=true 显式共享用户真实登录（不读取/不复制凭据内容）。defaultModel 已移除（不再改写全局 provider 配置）。",
+  "zcode": { "executable": "D:/Software/nodejs/node.exe", "bundle": "E:/software/ZCode/resources/glm/zcode.cjs", "executionTimeoutMs": 900000 },
   "zcodeEnv": {
     "ZCODE_DATA_BASE_DIR": "C:/Users/<用户>/AppData/Roaming/SPB_Data",
     "ZCODE_BUILTIN_PROVIDER_CONFIG_FILE": "C:/Users/<用户>/AppData/Roaming/SPB_Data/.zcode/v2/runtime/provider/windows-x86_64/<版本>/endpoint-…/zcode-builtin.json",
     "ZCODE_PERSONAL_PROVIDER_CONFIG_FILE": "C:/Users/<用户>/AppData/Roaming/SPB_Data/.zcode/v2/provider_config.json",
     "ZCODE_BASE_URL": "https://zcode.z.ai",
-    "ZCODE_ENV": "production"
+    "ZCODE_ENV": "production",
+    "PROJECTORCH_ZCODE_ACCOUNT_PROVIDER": "account:bigmodel-individual-coding-plan"
   },
-  "codex": {
-    "executable": "C:/Users/<用户>/AppData/Local/OpenAI/Codex/bin/<版本目录>/codex.exe",
-    "executionTimeoutMs": 900000,
-    "rpcTimeoutMs": 20000,
-    "sharedLogin": true
-  }
+  "codex": { "executable": "C:/Users/<用户>/AppData/Local/OpenAI/Codex/bin/<版本目录>/codex.exe", "executionTimeoutMs": 900000, "rpcTimeoutMs": 20000, "sharedLogin": true }
 }

@@ -1,8 +1,8 @@
 {
   "kind": "ProjectOrch public source alpha.3",
   "applicationVersion": "0.1.0-alpha.3",
-  "basePublicCommit": "513484c816768c35f2f4be69b041ab8f9b49476b",
-  "sourceTreeSha256": "2942dce12060f1c4f87f678b76edd48d8ba15ee8ec964fb023e4bcb684490a6a",
+  "basePublicCommit": "2c98f338caff09acb16b5270497d3bd3fe6357a8",
+  "sourceTreeSha256": "3637f84505ef35e5d0c5e780b67abc2daa8b25e47074c2907e645db865f73b4c",
   "nativeEvidenceRebound": false,
   "files": [
     {
@@ -37,8 +37,8 @@
     },
     {
       "path": "PUBLIC_EXPORT_POLICY.json",
-      "size": 24703,
-      "sha256": "79764d84ea1ddc001c2d9abfc6f74b62fc4b50830e961a0f2f8d05569221bf05",
+      "size": 24869,
+      "sha256": "74d68c227bc9616f4c878851205d4788a7ba148c193d094fdd338eab892a5d83",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -49,8 +49,8 @@
     },
     {
       "path": "README.md",
-      "size": 3626,
-      "sha256": "395dda40a73fc1df78b6a35b8be77834335ad5e859a7437f4d6d86cad50cec1b",
+      "size": 3752,
+      "sha256": "62cf850128ad73392f99cde4a92551b42720c5434385ecba6c960bb0aa4495f7",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -367,8 +367,8 @@
     },
     {
       "path": "apps/kernel/src/execution/zcode-supervisor.ts",
-      "size": 29944,
-      "sha256": "595ab8dbda9ac20729f0b836e5d80abe2fc70f95af045be97460103ad56ac116",
+      "size": 33232,
+      "sha256": "8d814b70773c5d4d38ac9818057712bccf0d43fee64f548a6b9c1dd949417b6e",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -421,8 +421,8 @@
     },
     {
       "path": "apps/kernel/src/lifecycle/application.ts",
-      "size": 57519,
-      "sha256": "42a49502f55d3ba653ef3568a8b1e7cf5d81087f3cc33d4c64da0616e7a70b7c",
+      "size": 58129,
+      "sha256": "8c6f741d23981a2f27949d9bea7ecd8f82fd10f417bb4f286073bbca6d09ce05",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -433,8 +433,8 @@
     },
     {
       "path": "apps/kernel/src/main.ts",
-      "size": 7062,
-      "sha256": "dc4b05e59ab97772e331ab330c4df5ad9a14e88413a06416309a3ca5b0e0b40e",
+      "size": 7100,
+      "sha256": "08a497efa8f14bb14ace7513de236db4a70e5a2db62e8716f0d56b8967975fb1",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -510,6 +510,12 @@
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
+      "path": "apps/kernel/src/native/zcode-account-model-profile.ts",
+      "size": 4509,
+      "sha256": "f55a8ea8c9aafa93d8483aeec96d378421947fc4abe5b44442884fbe2d2a404c",
+      "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
+    },
+    {
       "path": "apps/kernel/src/native/zcode-cli-result.ts",
       "size": 5217,
       "sha256": "d867d28edb31b9e5b34180b440476117d717f7654455a9116bb288996985cac3",
@@ -529,8 +535,8 @@
     },
     {
       "path": "apps/kernel/src/native/zcode-text-process.ts",
-      "size": 7836,
-      "sha256": "7a5df8d26a5892348063bbecd480a176a249651fb995e3b34218165acd184c9e",
+      "size": 8617,
+      "sha256": "306baa6e6cb0d1f343989a414d326e9c502d44e3140cceca4c3b172f41c5ef10",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -691,8 +697,8 @@
     },
     {
       "path": "apps/web/src/management.ts",
-      "size": 22279,
-      "sha256": "be801b991b590bbe198f61c83a5f87be7e793a5ad56f690d06a7128a030d6280",
+      "size": 22360,
+      "sha256": "8dd49ca52e9e8c038e8911b4fe38eec9f72e277cc64b077eaece09a0185cccf4",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -1063,8 +1069,8 @@
     },
     {
       "path": "docs/config-samples/native-config.example.json",
-      "size": 1022,
-      "sha256": "e9bfb2c6caca7867b75dbf2236e97f6d3de4de1f77ab8dc8fd174332964d26e0",
+      "size": 1376,
+      "sha256": "fbd5e15737a5960c744ff787ab1f7d622f4da8ab2c24ec94a2eb4dbc7ed88125",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -1095,6 +1101,12 @@
       "path": "docs/user/WINDOWS_CANDIDATE_GUIDE.md",
       "size": 2044,
       "sha256": "9b0414f4486258dcd253fa3860e11f20e49adbae1c61cc5fa6aac86e2f14df90",
+      "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
+    },
+    {
+      "path": "docs/user/ZCODE_ACCOUNT_MODELS.md",
+      "size": 1971,
+      "sha256": "0fcdce2346ff0acbd39b7db7c9151d724d972cc34f4cd9cd1543b10584e039b4",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -1351,8 +1363,8 @@
     },
     {
       "path": "packages/domain/src/roles/index.ts",
-      "size": 16884,
-      "sha256": "a88d7a0f7a02f7f4156b4045af2d0d8e2de6cd7ec508a79bd02e76121ab75f8e",
+      "size": 16929,
+      "sha256": "42ebc6a6190875272b73798ac6d85c7c3f2d0e53b17bcfa15348f37626c9ba87",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {
@@ -2505,6 +2517,12 @@
       "path": "tests/security/auth/workflow-fairness.test.mjs",
       "size": 4778,
       "sha256": "ca07b2857c43da4c308c99471fcbe91c2db15021a8d19ef8bea7dacabd2a6f61",
+      "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
+    },
+    {
+      "path": "tests/security/auth/zcode-account-model-profile.test.mjs",
+      "size": 5669,
+      "sha256": "a7669d44bbd5c8203c95821a10c89d88a34f0f72e74ccb099cfc6ac7e11bc27d",
       "origin": "inherited-public-source-or-reviewed-alpha.3-model-factory-delta"
     },
     {

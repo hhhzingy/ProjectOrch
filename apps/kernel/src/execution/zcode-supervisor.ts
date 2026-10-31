@@ -30,6 +30,8 @@ import { taskExecutionPrompt } from './task-prompt.js';
 import { inspectZcodeExecution, inspectCodexExecution } from '../native/execution-observation.js';
 import { sameSession } from '@projectorch/adapter-contract';
 import type { NativeModelSelection } from '../native/model-selection.js';
+import {usesZcodeAccountProfile} from '../native/zcode-account-model-profile.js';
+import {zcodeHistoryTerminal} from '../native/zcode-history-observation.js';
 import { detectCodexIdentity } from "./codex-supervisor.js";
 
 // ==================== T111：持久会话工厂 ====================
@@ -67,7 +69,21 @@ export interface FactoryOutcome {
   readonly nativeSessionId: string;
   readonly nativeTurnId: string | null;
   /** 权威生效模型（app-server resume读回；读回失败为null不阻断）。 */
-  readonly effectiveModel: { modelId: string; providerId: string | null } | null;
+  readonly effectiveModel: { modelId: string; providerId: string | null;basis?:'turn-authoritative';turnId?:string } | null;
+}
+
+/** 账户 app-server 无 current 不代表没有权限；只核对指定真实轮的官方历史，不采用模型自报。 */
+export async function observeZcodeTurnModel(options:ZCodeTextProcessOptions,sessionId:string,turnId:string){
+ const {StdioPeer}=await import('../native/stdio-peer.js');
+ const peer=new StdioPeer({executable:options.executable,args:[options.bundle,'app-server'],cwd:options.cwd,env:options.env,timeoutMs:20000});
+ try{await peer.ready;await new Promise(r=>setTimeout(r,1200));const resumed=await peer.request('session/resume',{sessionId,workspace:{workspacePath:options.cwd,workspaceKey:options.cwd}}) as {sessionId?:string;session?:{sessionId?:string}};
+  if((resumed.sessionId??resumed.session?.sessionId)!==sessionId)return null;
+  const read=await peer.request('session/read',{sessionId,contentProfile:'index'}),messages=await peer.request('session/messages',{sessionId,limit:200}) as {messages?:{info?:{sessionID?:string;role?:string;modelId?:string;providerId?:string;anchor?:{turnId?:string}}}[]};
+  if(!zcodeHistoryTerminal(read,messages,sessionId,turnId))return null;
+  const assistants=(messages.messages??[]).filter(m=>m.info?.sessionID===sessionId&&m.info.role==='assistant'&&m.info.anchor?.turnId===turnId).map(m=>m.info!);
+  const first=assistants[0];if(!first?.modelId||!first.providerId||assistants.some(m=>m.modelId!==first.modelId||m.providerId!==first.providerId))return null;
+  return {modelId:first.modelId,providerId:first.providerId,basis:'turn-authoritative' as const,turnId};
+ }finally{await peer.close().catch(()=>undefined);}
 }
 
 /** 权威会话模型观察（导出——泵的官方核验与effective读回共用）：app-server resume+read（只读不占lease）。 */
@@ -135,23 +151,33 @@ export class ZcodeSessionFactory {
     env.ZCODE_PROCESS_LABEL = `projectorch-factory-${processEpoch.slice(0, 8)}`;
     env.NO_COLOR = "1";
     const options: ZCodeTextProcessOptions = { executable: this.#options.executable, bundle: this.#options.bundle, cwd: input.workspaceRoot, env, ...(this.#options.timeoutMs !== undefined ? { timeoutMs: this.#options.timeoutMs } : {}) };
-    if(input.modelSelection){const {createSelectedZcodeSession}=await import('../native/zcode-factory-session.js');return createSelectedZcodeSession(options,this.#options.leaseDirectory,{...input,modelSelection:input.modelSelection});}
+    if(input.modelSelection&&!usesZcodeAccountProfile(env,input.modelSelection)){const {createSelectedZcodeSession}=await import('../native/zcode-factory-session.js');return createSelectedZcodeSession(options,this.#options.leaseDirectory,{...input,modelSelection:input.modelSelection});}
     let lease: NativeSessionLease | undefined;
     try {
       input.onStep({ step: "create-session", state: "sent", detail: null, at: Date.now() });
-      const process = new ZCodeTextProcess(options);
+      const process = new ZCodeTextProcess({...options,...(input.modelSelection?{modelSelection:()=>input.modelSelection!,modelProfileDirectory:this.#options.leaseDirectory}:{})});
       input.assertCanSend?.();
-      const receipt = await process.execute(input.charter, null);
+      const receipt = await process.execute(input.charter, null,undefined,(sessionId)=>{
+       if(!input.modelSelection)return;
+       const ref={harnessId:'zcode',hostId:input.hostId,profileId:input.profileId,nativeConversationId:sessionId,nativeWorkspaceId:input.workspaceRoot};
+       input.onStep({step:'create-session',state:'observed',detail:sessionId,at:Date.now()});
+       lease=NativeSessionLease.acquire(this.#options.leaseDirectory,ref);
+      },input.assertCanSend,()=>{if(input.modelSelection)input.onStep({step:'deliver-charter',state:'sent',detail:null,at:Date.now()});});
       const nativeSessionId = receipt.result.sessionId;
       if (!nativeSessionId) throw new Error("FACTORY_SESSION_NOT_OBSERVED");
       const sessionRef: SessionRef = { harnessId: "zcode", hostId: input.hostId, profileId: input.profileId, nativeConversationId: nativeSessionId, nativeWorkspaceId:input.workspaceRoot };
-      lease = NativeSessionLease.acquire(this.#options.leaseDirectory, sessionRef);
-      input.onStep({ step: "create-session", state: "observed", detail: nativeSessionId, at: Date.now() });
+      if(!lease){lease = NativeSessionLease.acquire(this.#options.leaseDirectory, sessionRef);input.onStep({ step: "create-session", state: "observed", detail: nativeSessionId, at: Date.now() });}
       input.onStep({ step: "deliver-charter", state: "observed", detail: receipt.result.turnId, at: Date.now() });
       // 执行侧生效模型权威读回（app-server resume+read 的会话元数据——模型自报不可作判据）；失败不阻断建会话，effective留空
-      let effectiveModel: { modelId: string; providerId: string | null } | null = null;
+      let effectiveModel: FactoryOutcome['effectiveModel'] = null;
+      if(input.modelSelection){
+       effectiveModel=await observeZcodeTurnModel(options,nativeSessionId,receipt.result.turnId);
+       const expectedProvider=input.modelSelection.providerId??env.PROJECTORCH_ZCODE_ACCOUNT_PROVIDER;
+       if(!effectiveModel||effectiveModel.modelId!==input.modelSelection.modelId||effectiveModel.providerId!==expectedProvider)throw new NativeRpcError('FACTORY_MODEL_SELECTION_UNCONFIRMED','uncertain');
+       input.assertCanSend?.();
+      }
       try {
-        effectiveModel = await observeSessionModel(this.#options.executable, this.#options.bundle, input.workspaceRoot, nativeSessionId, this.#options.env);
+        if(!input.modelSelection)effectiveModel = await observeSessionModel(this.#options.executable, this.#options.bundle, input.workspaceRoot, nativeSessionId, this.#options.env);
         if (effectiveModel) input.onStep({ step: "observe-effective-model", state: "observed", detail: `${effectiveModel.providerId ?? "?"}/${effectiveModel.modelId}`, at: Date.now() });
       } catch { /* 读回尽力：不可用时由后续监督补 */ }
       lease.releaseAfterExit(receipt.exitConfirmed); lease=undefined;
@@ -162,7 +188,7 @@ export class ZcodeSessionFactory {
       const stderrSummary = (error as { nativeStderrSummary?: string | null }).nativeStderrSummary ?? null;
       const state = /UNCONFIRMED|TIMEOUT|UNKNOWN/u.test(message) ? "unknown" : "failed";
       input.onStep({ step: "create-session", state, detail: `${message.slice(0, 160)}${stderrSummary ? ` | stderr:${stderrSummary}` : ""}`, at: Date.now() });
-      try { lease?.releaseAfterExit(true); } catch { /* 尽力清理 */ }
+      // 已发送但未能核实原生终态/实际模型时保留 owner，不因子进程退出清空 unknown。
       throw error;
     }
   }
@@ -171,6 +197,7 @@ export class ZcodeSessionFactory {
 // ==================== 既有 T039/T035 协调器装配（保留） ====================
 
 export interface ZcodeSupervisorConfig extends ExecutionTimeoutOptions {
+  readonly modelSelectionFor?:(session:SessionRef)=>NativeModelSelection|null;
   readonly trustedLocalUserId?:string;
   readonly executable?: string;
   readonly bundle?: string;
@@ -227,14 +254,14 @@ export class ZcodeCliExecutionDriver {
     catch { throw new NativeDispatchNotSent('NATIVE_OWNER_OCCUPIED'); }
     let executionId = ''; // 未观察到原生turn前不填调度UUID冒充原生身份。
     let sent=false;const startedAt=Date.now();
-    const run=async()=>{await Promise.resolve();await this.#beforeTurn?.(this.session,assertCanSend,input);assertCanSend();sent=true;return this.#process.execute(prompt, this.session.nativeConversationId, undefined, (_sessionId, turnId) => { executionId = turnId; started(this.session, turnId); });};
+    const run=async()=>{await Promise.resolve();await this.#beforeTurn?.(this.session,assertCanSend,input);assertCanSend();sent=true;return this.#process.execute(prompt, this.session.nativeConversationId, undefined, (_sessionId, turnId) => { executionId = turnId; started(this.session, turnId); },assertCanSend);};
     const result = run().then((receipt: ZCodeTextProcessReceipt): { session: SessionRef; executionId: string; status: "completed" | "failed" | "interrupted" | "unknown"; terminalConfirmed: boolean; responseExcerpt?: string } => {
       if (!receipt.exitConfirmed || !receipt.result.sessionId || receipt.result.sessionId !== this.session.nativeConversationId) {
         return { session: this.session, executionId, status: "unknown", terminalConfirmed: false };
       }
       this.#lease!.releaseAfterExit(true); this.#lease=null;
       return { session: this.session, executionId, status: receipt.result.turnId ? "completed" : "unknown", terminalConfirmed: receipt.result.turnId !== null, responseExcerpt: String(receipt.result.response ?? "").slice(0, 600) };
-    }).catch(error => {if(!sent){this.#lease?.releaseAfterExit(true);this.#lease=null;throw new NativeDispatchNotSent(error instanceof NativeRpcError?'MODEL_SELECTION_UNAVAILABLE':'EXECUTION_ADMISSION_CHANGED');}return { session: this.session, executionId, status: "unknown" as const, terminalConfirmed: false, diagnostics:safeExecutionDiagnostic({code:error?.code,elapsedMs:Date.now()-startedAt,...this.#process.snapshot}) };});
+    }).catch(error => {if(!sent||(error instanceof NativeRpcError&&error.delivery==='not_sent')){this.#lease?.releaseAfterExit(true);this.#lease=null;throw new NativeDispatchNotSent(error instanceof NativeRpcError?error.code:'EXECUTION_ADMISSION_CHANGED');}return { session: this.session, executionId, status: "unknown" as const, terminalConfirmed: false, diagnostics:safeExecutionDiagnostic({code:error?.code,elapsedMs:Date.now()-startedAt,...this.#process.snapshot}) };});
     return { result };
   }
   inspectExecution(input:{session:SessionRef;executionId:string}){
@@ -398,7 +425,7 @@ export function buildExecutionServices(store: Store, supervisorServices: Supervi
 export function createZcodeWorkflowRuntime(store: Store, context: { readonly now: () => number; readonly isKernelOwner: () => boolean }, config: ZcodeSupervisorConfig, sessionForBinding: SupervisorServices["sessionForBinding"], registry: NativeCompatibilityRegistry, codexConfigFor?: (session: SessionRef, workspaceRoot: string) => CodexDriverConfig) {
   const processOptionsFor = (_session: SessionRef, workspaceRoot: string): ZCodeTextProcessOptions & {beforeTurn?:(session:SessionRef,assertCurrent:()=>void,input?:unknown)=>Promise<void>} => {
     if(!config.executable||!config.bundle||!config.env)throw new Error('ZCODE_RUNTIME_NOT_CONFIGURED');
-    return { executable: config.executable, bundle: config.bundle, cwd: workspaceRoot, env: config.env,...(config.beforeTurn?{beforeTurn:config.beforeTurn}:{}), ...(config.leaseDirectory ? {leaseDirectory:config.leaseDirectory} : {}), timeoutMs:executionTimeout(config) };
+    return { executable: config.executable, bundle: config.bundle, cwd: workspaceRoot, env: config.env,...(config.beforeTurn?{beforeTurn:config.beforeTurn}:{}),...(config.modelSelectionFor?{modelSelection:()=>config.modelSelectionFor!(_session)}:{}), ...(config.leaseDirectory ? {leaseDirectory:config.leaseDirectory,modelProfileDirectory:config.leaseDirectory} : {}), timeoutMs:executionTimeout(config) };
   };
   const { services, ExecutionCoordinator } = buildExecutionServices(store, { now: context.now, isKernelOwner: context.isKernelOwner, sessionForBinding }, registry, processOptionsFor, codexConfigFor);
   const coordinator = new ExecutionCoordinator(store, services);

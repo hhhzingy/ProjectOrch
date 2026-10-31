@@ -37,6 +37,7 @@ import { toolAction } from '../tools/gateway-tools.js';
 import { mcpToolEntries } from '../tools/mcp-catalog.js';
 import { bindingForSession,bindingModelSelection,roleModelSelection } from '../execution/binding-model-selection.js';
 import { applyZcodeModelSelection } from '../native/model-selection.js';
+import {usesZcodeAccountProfile} from '../native/zcode-account-model-profile.js';
 import {readNativeConversation} from '../native/conversation-reader.js';
 import {recoverInterruptedCodexMessage} from '../execution/message-negative-recovery.js';
 
@@ -234,9 +235,9 @@ export async function startApplication(dataDirectory: string, options: StartAppl
         const selection=bindingModelSelection(st,bindingForSession(st,session));
         if(!selection)return;
         const zcode=options.native?.zcode;if(!zcode)throw new NativeRpcError('ZCODE_RUNTIME_NOT_CONFIGURED','not_sent');
-        await applyZcodeModelSelection({...zcode,cwd:session.nativeWorkspaceId??''},session,selection,assertCurrent);
+        if(!usesZcodeAccountProfile(zcode.env,selection))await applyZcodeModelSelection({...zcode,cwd:session.nativeWorkspaceId??''},session,selection,assertCurrent);
       };
-      return createZcodeWorkflowRuntime(st, ctx, { ...(options.native?.zcode ? options.native.zcode : {}), workspaceForTask: workspaceIdForTask,beforeTurn,trustedLocalUserId:principalId }, sessionForBinding, registry, options.native?.codex ? (session, workspaceRoot) => {
+      return createZcodeWorkflowRuntime(st, ctx, { ...(options.native?.zcode ? options.native.zcode : {}),modelSelectionFor:session=>bindingModelSelection(st,bindingForSession(st,session)), workspaceForTask: workspaceIdForTask,beforeTurn,trustedLocalUserId:principalId }, sessionForBinding, registry, options.native?.codex ? (session, workspaceRoot) => {
         // 复核批次一：codex执行驱动配置（工作区按绑定工作区分离——不再共用shared-ws；env同建会话路径含sharedLogin语义）
         const codexEnv = buildCodexEnv(options.native!.codex!.profileDirectory, options.native!.codex!.sharedLogin === true);
         const bindingId=bindingForSession(st,session);
@@ -377,7 +378,7 @@ export async function startApplication(dataDirectory: string, options: StartAppl
         try {
           const { recordModelEffective } = await import("@projectorch/domain/roles");
           const roleIdForEffective = typeof (input as { roleId?: unknown }).roleId === 'string' ? String((input as { roleId: string }).roleId) : null;
-            if (roleIdForEffective) recordModelEffective(rt.store, String(input.projectId ?? ''), roleIdForEffective, { modelId: outcome.effectiveModel.modelId, providerId: outcome.effectiveModel.providerId, observedAt: Date.now(), basis: 'session-authoritative' },Number(preference?.model_preference_revision));
+            if (roleIdForEffective) recordModelEffective(rt.store, String(input.projectId ?? ''), roleIdForEffective, { modelId: outcome.effectiveModel.modelId, providerId: outcome.effectiveModel.providerId, observedAt: Date.now(), basis: outcome.effectiveModel.basis??'session-authoritative',...(outcome.effectiveModel.turnId?{turnId:outcome.effectiveModel.turnId}:{}) },Number(preference?.model_preference_revision));
         } catch { /* 回写尽力 */ }
       }
       input.onStep({step:'session-identity',state:'observed',detail:JSON.stringify(outcome.sessionRef),at:Date.now()});
@@ -422,14 +423,14 @@ export async function startApplication(dataDirectory: string, options: StartAppl
     const identity = (() => { const detected = detectZcodeIdentity(options.native!.zcode!.executable, options.native!.zcode!.bundle); return { harnessId: 'zcode', version: detected.version, executableSha256: detected.executableSha256, bundleSha256: detected.bundleSha256, adapterProtocol: 'zcode-cli-jsonl-v2', route: 'official_cli' } as const; })();
     if (!registry.decide(identity, 'resume').enabled) throw new NativeRpcError('NATIVE_CAPABILITY_UNVERIFIED:resume','not_sent');
     const env: Record<string, string> = { ...options.native.zcode.env, NO_COLOR: '1', ZCODE_PROCESS_LABEL: `projectorch-delivery-${Date.now().toString(36)}` };
-    const process = new ZCodeTextProcess({ executable: options.native.zcode.executable, bundle: options.native.zcode.bundle, cwd: target.workspaceRoot || '.', env, ...(options.native.zcode.timeoutMs !== undefined ? { timeoutMs: options.native.zcode.timeoutMs } : {}) });
+    const process = new ZCodeTextProcess({ executable: options.native.zcode.executable, bundle: options.native.zcode.bundle, cwd: target.workspaceRoot || '.', env,modelSelection:()=>bindingModelSelection(rt.store,_bindingId),modelProfileDirectory:options.native.zcode.leaseDirectory, ...(options.native.zcode.timeoutMs !== undefined ? { timeoutMs: options.native.zcode.timeoutMs } : {}) });
     assertCurrent();
     const bindingSession=rt.store.db.prepare('SELECT s.harness_id AS h,s.host_id AS ho,s.profile_id AS p,s.native_conversation_id AS n,s.native_workspace_id AS w FROM role_bindings b JOIN sessions s ON s.id=b.session_id WHERE b.id=? AND b.ended_at IS NULL').get(_bindingId) as {h:string;ho:string;p:string;n:string;w:string|null}|undefined;
     if(!bindingSession) throw new NativeRpcError('BINDING_NOT_FOUND','not_sent');
     const lease=NativeSessionLease.acquire(options.native.zcode.leaseDirectory,{harnessId:bindingSession.h,hostId:bindingSession.ho,profileId:bindingSession.p,nativeConversationId:bindingSession.n,...(bindingSession.w?{nativeWorkspaceId:bindingSession.w}:{})});
     try{
       const selection=bindingModelSelection(rt.store,_bindingId);
-      if(selection)await applyZcodeModelSelection({...options.native.zcode,cwd:target.workspaceRoot??''},{harnessId:bindingSession.h,hostId:bindingSession.ho,profileId:bindingSession.p,nativeConversationId:bindingSession.n,...(bindingSession.w?{nativeWorkspaceId:bindingSession.w}:{})},selection,assertCurrent);
+      if(selection&&!usesZcodeAccountProfile(env,selection))await applyZcodeModelSelection({...options.native.zcode,cwd:target.workspaceRoot??''},{harnessId:bindingSession.h,hostId:bindingSession.ho,profileId:bindingSession.p,nativeConversationId:bindingSession.n,...(bindingSession.w?{nativeWorkspaceId:bindingSession.w}:{})},selection,assertCurrent);
       assertCurrent();
       // 消息轮不继承已终态任务轮的范围凭据；仅在无任务占位且本实例取得租约后恢复绑定工具入口。
       const binding=rt.store.db.prepare('SELECT project_id,epoch FROM role_bindings WHERE id=? AND ended_at IS NULL').get(_bindingId);if(!binding)throw new NativeRpcError('BINDING_NOT_FOUND','not_sent');
@@ -441,8 +442,9 @@ export async function startApplication(dataDirectory: string, options: StartAppl
     // 异常时保留owner占位供权威核对，不能按PID/时间抢占。
     const executionStartedAt=Date.now();
     let receipt:Awaited<ReturnType<ZCodeTextProcess['execute']>>;
-    try{receipt=await process.execute(input,target.nativeConversationId,undefined,(sessionId,turnId)=>onTurnStarted('zcode',sessionId,turnId));}
+    try{receipt=await process.execute(input,target.nativeConversationId,undefined,(sessionId,turnId)=>onTurnStarted('zcode',sessionId,turnId),assertCurrent);}
     catch(error){
+      if(error instanceof NativeRpcError&&error.delivery==='not_sent'){lease.releaseAfterExit(true);throw error;}
       const snapshot=process.snapshot,code=(error as {code?:unknown}).code;
       return {harnessId:'zcode',nativeConversationId:target.nativeConversationId,nativeTurnId:snapshot.nativeTurnId,status:'unknown',responseText:'',exitConfirmed:snapshot.exitConfirmed,failureCode:safeExecutionDiagnostic({code}).code,diagnostics:safeExecutionDiagnostic({code,elapsedMs:Date.now()-executionStartedAt,...snapshot})};
     }

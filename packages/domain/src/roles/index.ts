@@ -157,7 +157,7 @@ export function setRoleModelPreferenceWithin(db:Store['db'],projectId:string,rol
 }
 
 /** 执行侧生效模型权威观察（工厂建会话后经app-server resume读回的modelId——非用户自报）。 */
-export interface ModelEffective { readonly modelId: string; readonly providerId: string | null; readonly observedAt: number; readonly basis: "session-authoritative"; }
+export interface ModelEffective { readonly modelId: string; readonly providerId: string | null; readonly observedAt: number; readonly basis: "session-authoritative"|"turn-authoritative";readonly turnId?:string; }
 export function recordModelEffective(store: Store, projectId: string, roleId: string, effective: ModelEffective,expectedModelRevision?:number): void {
   if (!effective?.modelId || typeof effective.modelId !== "string" || effective.modelId.length > 128) throw new Error("INVALID_MODEL_EFFECTIVE");
   store.transaction(db => {
