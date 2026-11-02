@@ -11,7 +11,8 @@ const ROOT=path.resolve(fileURLToPath(new URL('..',import.meta.url)));
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const safe=p=>typeof p==='string'&&p.length>0&&p.length<500&&!/[\\:<>"|?*]/.test(p)&&![...p].some(c=>c.charCodeAt(0)<32||c.charCodeAt(0)===127)&&!p.startsWith('/')&&p.split('/').every(v=>v!=='.'&&v!=='..'&&v!==''&&!/[. ]$/.test(v)&&! /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(v));
 const frozenTime=new Date('2026-10-18T00:00:00Z');
-const release=JSON.parse(fs.readFileSync(path.join(ROOT,'PUBLIC_RELEASE.json'),'utf8'));if(release.license!=='Apache-2.0')throw Error('APACHE_RELEASE_METADATA_REQUIRED');
+const releaseFile=path.join(ROOT,'PUBLIC_RELEASE.json');
+const release=fs.existsSync(releaseFile)?JSON.parse(fs.readFileSync(releaseFile,'utf8')):{license:'Apache-2.0',publicationAuthorization:'NOT_ASSERTED',publicationReadiness:'NOT_ASSERTED'};if(release.license!=='Apache-2.0')throw Error('APACHE_RELEASE_METADATA_REQUIRED');
 function walk(directory){
  const rootStat=fs.lstatSync(directory);if(rootStat.isSymbolicLink()||!rootStat.isDirectory())throw Error('CANDIDATE_LINK_REJECTED');
  const files=[];
@@ -84,11 +85,9 @@ export function buildWindowsCandidate({root=ROOT,nodeDirectory=path.join(ROOT,'w
   }
   dependencies.push(record);
  }
- for(const p of ['config/compatibility.json','config/native-policy.json','scripts/mcp-control-bridge.mjs'])copy(path.join(root,p),p);
- copy(path.join(root,'docs/user/WINDOWS_CANDIDATE_GUIDE.md'),'docs/USER_MANUAL.md');
- copy(path.join(root,'docs/user/ALPHA_FIRST_USE.md'),'docs/ALPHA_FIRST_USE.md');
- copy(path.join(root,'docs/user/ALPHA_KNOWN_ISSUES.md'),'docs/ALPHA_KNOWN_ISSUES.md');
- copy(path.join(root,'docs/user/OPEN_SOURCE_PREPARATION.md'),'docs/OPEN_SOURCE_PREPARATION.md');
+ for(const p of ['config/compatibility.json','config/native-policy.json','scripts/mcp-control-bridge.mjs','scripts/setup.mjs','AI_START_HERE.md'])copy(path.join(root,p),p);
+ for(const name of ['ALPHA_FIRST_USE.md','ALPHA_KNOWN_ISSUES.md','OPEN_SOURCE_PREPARATION.md','WINDOWS_CANDIDATE_GUIDE.md','AI_INSTALL_AND_USE.md','AI_PROMPTS.md','CODEX_SANDBOX.md'])copy(path.join(root,'docs/user',name),'docs/user/'+name);
+ for(const [alias,name] of [['USER_MANUAL.md','WINDOWS_CANDIDATE_GUIDE.md'],['ALPHA_FIRST_USE.md','ALPHA_FIRST_USE.md'],['ALPHA_KNOWN_ISSUES.md','ALPHA_KNOWN_ISSUES.md'],['OPEN_SOURCE_PREPARATION.md','OPEN_SOURCE_PREPARATION.md']])add('docs/'+alias,'# 用户说明入口\n\n请阅读 [当前说明](user/'+name+')。给AI的完整入口为根目录 AI_START_HERE.md。\n');
  copy(path.join(root,'LICENSE'),'LICENSE');copy(path.join(root,'PUBLIC_RELEASE.json'),'PUBLIC_RELEASE.json');copy(path.join(root,'docs/SUPPORT_STATUS.json'),'docs/SUPPORT_STATUS.json');
  for(const p of ['native-config.example.json','codex-mcp-entry.toml','zcode-mcp-entry.json'])copy(path.join(root,'docs/config-samples',p),'docs/config-samples/'+p);
  const binary=path.join(nodeDirectory,'node.exe'),license=path.join(nodeDirectory,'LICENSE');
@@ -97,7 +96,7 @@ export function buildWindowsCandidate({root=ROOT,nodeDirectory=path.join(ROOT,'w
  const version=spawnSync(binary,['--version'],{encoding:'utf8',windowsHide:true,timeout:10000});
  if(version.status!==0||version.stdout.trim()!=='v24.22.0')throw Error('PINNED_WINDOWS_RUNTIME_REQUIRED');
  add('start.cmd','@echo off\r\n"%~dp0runtime\\node.exe" "%~dp0apps\\kernel\\dist\\main.js" %*\r\n');
- add('README.txt','ProjectOrch 0.1.0-alpha.3 Windows Apache Alpha本地候选（hhhzingy；https://github.com/hhhzingy/ProjectOrch）\r\n以普通用户解压到本地目录，运行 start.cmd --pair；不要以管理员运行。\r\n--data-dir 可选择独立数据目录；默认数据保存在用户本地应用数据目录。\r\nCtrl+C 停止。卸载仅移除安装目录，保留项目、数据目录和官方Harness。\r\n真实模型需要自行安装/登录官方Harness并配置native-config；候选不含认证。\r\n本项目采用Apache-2.0；已获完成Alpha后发布授权，基本Alpha子集已验收；本包构建时尚未公开，实际分发以GitHub Release记录为准。\r\n基本Alpha子集已验；干净Windows与完整路线仍未验。详见docs/USER_MANUAL.md。\r\n');
+ add('README.txt','ProjectOrch '+(release.applicationVersion??JSON.parse(fs.readFileSync(path.join(root,'apps/kernel/package.json'))).version)+' Windows Apache Alpha本地候选（hhhzingy；https://github.com/hhhzingy/ProjectOrch）\r\n先读 AI_START_HERE.md；使用自带 runtime/node.exe scripts/setup.mjs discover --json 开始配置。以普通用户运行，不要以管理员运行。\r\n--data-dir 可选择独立数据目录；默认数据保存在用户本地应用数据目录。\r\nCtrl+C 停止。卸载仅移除安装目录，保留项目、数据目录和官方Harness。\r\n真实模型需要自行安装/登录官方Harness并配置native-config；候选不含认证。\r\n本项目采用Apache-2.0；已获完成Alpha后发布授权，基本Alpha子集已验收；本包构建时尚未公开，实际分发以GitHub Release记录为准。\r\n基本Alpha子集已验；干净Windows与完整路线仍未验。详见docs/USER_MANUAL.md。\r\n');
  add('THIRD_PARTY_NOTICES.md','# 第三方运行依赖\n\nProjectOrch采用Apache-2.0，官方原文见根LICENSE；各第三方依赖沿用各自许可。各包许可正文位于对应 node_modules 包目录；Node.js 及其附带组件许可见 runtime/NODE_LICENSE.txt。\n\n'+dependencies.filter(p=>!p.name.startsWith('@projectorch/')).map(p=>`- ${p.name}@${p.version}：${p.license??'待核对'}`).join('\n')+'\n');
  add('DEPENDENCIES.json',JSON.stringify({schemaVersion:1,scope:'actual private candidate runtime dependency inventory',node:{version:version.stdout.trim(),sha256:sha(fs.readFileSync(binary))},dependencies},null,2)+'\n');
  // 同时绑定构建输入和实际复制的产物；只保存输入哈希，不收录开发源码/私有报告正文。

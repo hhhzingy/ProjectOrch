@@ -1,4 +1,4 @@
-# ProjectOrch 0.1.0-alpha.4
+# ProjectOrch 0.1.0-alpha.5
 
 本地多Harness协作内核（Local Kernel）：AI在Codex、ZCode聊天中通过MCP建立角色、分工和交互；用户主要监督任务、模型与进度，在Web答题、调整偏好或暂停。
 
@@ -37,3 +37,5 @@ SOURCE_MANIFEST.json记录各文件和上游源码hash；产品逻辑保持上�
 alpha.3：指定模型可用于新会话首轮，选择失败不回落默认模型。ZCode账户使用官方CLI隔离模型配置；已真实验证BigModel GLM-5.3-Flash创建与同ID续行。自定义供应商仍采用官方RPC设置/读回。Start Plan桌面可用，独立CLI接入未验证，参见[账户模型配置](docs/user/ZCODE_ACCOUNT_MODELS.md)。
 
 Codex 权限配置与旧项目升级见[会话沙箱说明](docs/user/CODEX_SANDBOX.md)。
+
+让 AI 安装配置和操作：从 [AI_START_HERE.md](AI_START_HERE.md) 开始，包含可复制命令、提示词及零模型配置检查工具。Windows ZIP同样内置。

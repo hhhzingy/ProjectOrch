@@ -7,6 +7,7 @@
   },
   "sourcePaths": [
     ".node-version",
+    "AI_START_HERE.md",
     "apps/kernel/package.json",
     "apps/kernel/src/adapters/codex-adapter.ts",
     "apps/kernel/src/adapters/observation-host.ts",
@@ -174,6 +175,9 @@
     "docs/config-samples/codex-mcp-entry.toml",
     "docs/config-samples/native-config.example.json",
     "docs/config-samples/zcode-mcp-entry.json",
+    "docs/user/AI_INSTALL_AND_USE.md",
+    "docs/user/AI_PROMPTS.md",
+    "docs/user/ALPHA_FIRST_USE.md",
     "docs/user/ZCODE_ACCOUNT_MODELS.md",
     "package-lock.json",
     "packages/README.md",
@@ -269,6 +273,7 @@
     "scripts/build-windows-candidate.mjs",
     "scripts/generate-contracts.mjs",
     "scripts/mcp-control-bridge.mjs",
+    "scripts/setup.mjs",
     "scripts/verify-windows-candidate.mjs",
     "tests/README.md",
     "tests/adapters/artifact-viewer.test.mjs",
@@ -460,6 +465,7 @@
     "tests/unit/runtime.test.mjs",
     "tests/unit/session-model-observation.test.mjs",
     "tests/unit/session-ref.test.mjs",
+    "tests/unit/setup.test.mjs",
     "tests/unit/task-prompt.test.mjs",
     "tests/unit/windows-candidate.test.mjs",
     "tests/unit/zcode-history-observation.test.mjs",
@@ -501,5 +507,5 @@
     ".github/**": "替换为最小Windows离线CI",
     "其他未明确列出文件": "默认排除，不沿目录自动新增"
   },
-  "approvedDeltaFromPublicCommit": "0e2072fe77a859debd184b9d22b0eb2b86cbc4a9"
+  "approvedDeltaFromPublicCommit": "07d457791d1d1f805bcb910e2879d3b51939a29a"
 }
