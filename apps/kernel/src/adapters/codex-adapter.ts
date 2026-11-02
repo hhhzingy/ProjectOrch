@@ -4,11 +4,13 @@ import {executionTimeout, rpcRequestTimeout, type ExecutionTimeoutOptions} from 
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import path from 'node:path';
 import { parseSessionRef } from "@projectorch/adapter-contract";
 import { StdioPeer, NativeRpcError } from "../native/stdio-peer.js";
 import { NativeSessionLease } from "../native/session-lease.js";
 import type { NativeCapability, NativeCompatibilityRegistry, NativeIdentity } from "../native/compatibility.js";
 import type { NativeModelSelection } from '../native/model-selection.js';
+import {readOnlySandbox, type CodexSandboxPolicy} from '../native/codex-sandbox.js';
 
 export const codexAdapterProtocol = "codex-app-server-jsonl-v2";
 export interface CodexAdapterOptions extends ExecutionTimeoutOptions {
@@ -18,6 +20,8 @@ export interface CodexAdapterOptions extends ExecutionTimeoutOptions {
   readonly env: Readonly<Record<string, string>>;
   /** 受信启动器的官方 -c 覆盖；凭据只从env引用，不写用户config.toml。 */
   readonly configOverrides?: readonly string[];
+  /** 可信内核按本绑定实时解析；缺省只读，每个实例独立。 */
+  readonly sandboxPolicy?: () => CodexSandboxPolicy;
   readonly timeoutMs?: number;
   readonly leaseDirectory?: string;
   readonly hostId?: string;
@@ -92,6 +96,13 @@ export class CodexAdapter {
     if (!this.#peer || this.#peer.diagnostics.closed || !this.#threadId) throw new Error("ADAPTER_NOT_CONNECTED");
     return this.#peer;
   }
+  #sandboxPolicy():CodexSandboxPolicy {
+    const policy=this.#options.sandboxPolicy?.()??readOnlySandbox();
+    if(policy.networkAccess!==false||!['readOnly','workspaceWrite'].includes(policy.type))throw new NativeRpcError('CODEX_SANDBOX_POLICY_INVALID','not_sent');
+    // 官方 workspaceWrite 还隐含包含进程/会话 cwd，不能只检查显式 roots。
+    if(policy.type==='workspaceWrite'&&(policy.writableRoots.length!==1||path.resolve(policy.writableRoots[0]!)!==path.resolve(this.#options.cwd)||!policy.excludeTmpdirEnvVar||!policy.excludeSlashTmp))throw new NativeRpcError('CODEX_SANDBOX_CWD_NOT_AUTHORIZED','not_sent');
+    return structuredClone(policy);
+  }
   #markUnknown(code = "NATIVE_EXECUTION_UNCERTAIN"): void {
     if(this.#active)this.#active.diagnosticCode??=code;
     this.#phase = "unknown";
@@ -131,7 +142,7 @@ export class CodexAdapter {
     this.#peer = peer;
     void peer.exited.then(() => { if (this.#phase === "running") this.#markUnknown(); });
     await peer.ready;
-    await peer.request("initialize", { clientInfo: { name: "projectorch_adapter", version: "2.0.0" } });
+    await peer.request("initialize", { clientInfo: { name: "projectorch_adapter", version: "2.0.0" },capabilities:{experimentalApi:true} });
     await peer.notify("initialized", {});
     return peer;
   }
@@ -140,11 +151,16 @@ export class CodexAdapter {
     this.#assertCapability(threadId ? "resume" : "textInput");
     this.#scope(threadId ?? "pending-create");
     NativeSessionLease.assertDirectory(this.#options.leaseDirectory as string);
+    if(Object.keys(createArgs).some(key=>key!=='model'))throw new NativeRpcError('CODEX_UNTRUSTED_THREAD_OPTIONS','not_sent');
+    this.#sandboxPolicy();
     this.#phase = "connecting";
     try {
       if (threadId) this.#lease = NativeSessionLease.acquire(this.#options.leaseDirectory as string, this.#scope(threadId));
       const peer = await this.#connect();
-      const response = asRecord(await peer.request(threadId ? "thread/resume" : "thread/start", threadId ? { threadId, excludeTurns: false } : { cwd: this.#options.cwd, ephemeral: false, sandbox: "read-only", approvalPolicy: "never", ...createArgs },assertCanSend));
+      // 创建/恢复先保持只读；精确可写根仅在已重新授权的 turn/start 设置。
+      // 不接受调用方从 createArgs 覆盖 cwd、sandbox、permissions、config 等安全字段。
+      const response = asRecord(await peer.request(threadId ? "thread/resume" : "thread/start", {...(threadId ? { threadId, excludeTurns: false } : { ...createArgs, ephemeral: false }),cwd:this.#options.cwd,runtimeWorkspaceRoots:[this.#options.cwd],sandbox:'read-only',approvalPolicy:'never'},()=>{assertCanSend?.();this.#sandboxPolicy();}));
+      if(this.#options.sandboxPolicy&&(asRecord(response.sandbox).type!=='readOnly'||asRecord(response.sandbox).networkAccess===true||response.approvalPolicy!=='never'))throw new Error('CODEX_SANDBOX_NOT_CONFIRMED');
       const thread = asRecord(response.thread);
       if (!token(thread.id) || (threadId !== null && thread.id !== threadId)) throw new Error("RESUME_ID_MISMATCH");
       this.#threadId = thread.id;
@@ -159,6 +175,10 @@ export class CodexAdapter {
     } catch (error) {
       this.#phase = this.#peer || this.#lease ? "unknown" : "disconnected";
       if (this.#peer) await this.#peer.close().catch(() => undefined);
+      if(error instanceof NativeRpcError&&error.delivery!=='uncertain'&&this.#peer?.diagnostics.exitConfirmed){
+        // 原生明确拒绝/实际未发送的打开操作不包含模型执行；退出后可释放本实例 owner。
+        this.#lease?.releaseAfterExit(true);this.#lease=null;this.#peer=null;this.#phase='disconnected';
+      }
       // 已取得的owner不因连接异常自行释放；原生状态仍待核对。
       throw error;
     }
@@ -174,6 +194,7 @@ export class CodexAdapter {
     if (typeof input !== "string" || !input.trim() || Buffer.byteLength(input) > 65536 || typeof marker !== "string" || marker.length > 65536) throw new Error("INVALID_TURN_INPUT");
     executionTimeout({timeoutMs}, "INVALID_TURN_INPUT");
     this.#assertCapability("textInput");
+    const sandboxPolicy=this.#sandboxPolicy();
     const startedAt=Date.now();
     const active: ActiveTurn = { turnId: null, status: "unknown", text: "", buffered: [], bufferedBytes: 0, settle: null };
     this.#active = active;
@@ -182,7 +203,7 @@ export class CodexAdapter {
     const done = new Promise<void>(resolve => { active.settle = resolve; timer = setTimeout(() => { this.#markUnknown("EXECUTION_DEADLINE_REACHED"); }, timeoutMs); });
     let boundaryError: unknown = null;
     try {
-      const start = peer.request("turn/start", { threadId: this.#threadId, input: [{ type: "text", text: input }],...(selection?.modelId?{model:selection.modelId}:{}),...(selection?.reasoningLevel?{effort:selection.reasoningLevel}:{}) }, () => { try { assertCanSend?.(); } catch (error) { boundaryError=error;throw error; } }).then(raw => {
+      const start = peer.request("turn/start", { threadId: this.#threadId, cwd:this.#options.cwd,approvalPolicy:'never',sandboxPolicy, input: [{ type: "text", text: input }],...(selection?.modelId?{model:selection.modelId}:{}),...(selection?.reasoningLevel?{effort:selection.reasoningLevel}:{}) }, () => { try { assertCanSend?.();if(JSON.stringify(this.#sandboxPolicy())!==JSON.stringify(sandboxPolicy))throw new NativeRpcError('CODEX_SANDBOX_AUTHORIZATION_CHANGED','not_sent'); } catch (error) { boundaryError=error;throw error; } }).then(raw => {
         const started = asRecord(raw);
         const turn = asRecord(started.turn);
         if (!token(turn.id) || (started.threadId !== undefined && started.threadId !== this.#threadId)) throw new Error("TURN_ID_NOT_PROVEN");

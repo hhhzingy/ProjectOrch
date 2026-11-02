@@ -1,5 +1,5 @@
 {
-  "applicationVersion": "0.1.0-alpha.3",
+  "applicationVersion": "0.1.0-alpha.4",
   "repositoryUrl": "https://github.com/hhhzingy/ProjectOrch",
   "maintainer": "hhhzingy",
   "license": "Apache-2.0",
@@ -23,5 +23,5 @@
   ],
   "acceptanceScope": "仅已独立复核的基本Alpha子集；完整85任务及125验收不代表完成",
   "runtimeVersionPolicy": "NO_HARNESS_VERSION_OR_HISTORICAL_HASH_ALLOWLIST",
-  "currentReleaseValidation": "指定模型工厂首轮实现及失败路径离线验证；真实环境实测结果以Release记录为准，不沿用旧模型证据。"
+  "currentReleaseValidation": "Codex 按角色绑定实时配置沙箱；真实双会话只读/可写并存及同ID恢复4轮通过，官方命令级越界写入拒绝。未重跑完整协作闭环。"
 }

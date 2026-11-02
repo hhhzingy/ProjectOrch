@@ -70,6 +70,7 @@
     "apps/kernel/src/lifecycle/kernel-runtime.ts",
     "apps/kernel/src/main.ts",
     "apps/kernel/src/native/README.md",
+    "apps/kernel/src/native/codex-sandbox.ts",
     "apps/kernel/src/native/compatibility.ts",
     "apps/kernel/src/native/conversation-reader.ts",
     "apps/kernel/src/native/execution-diagnostics.ts",
@@ -331,6 +332,7 @@
     "tests/security/auth/codex-factory.test.mjs",
     "tests/security/auth/codex-message-boundary.test.mjs",
     "tests/security/auth/codex-owned-recovery.test.mjs",
+    "tests/security/auth/codex-sandbox.test.mjs",
     "tests/security/auth/collaboration-tools.test.mjs",
     "tests/security/auth/command-pipeline.test.mjs",
     "tests/security/auth/continuous-execution.test.mjs",
@@ -481,7 +483,8 @@
     "docs/25_NATIVE_ADAPTER_RUNTIME.md": "NATIVE_ADAPTER_RUNTIME.md",
     "config/compatibility.json": "compatibility.json",
     "docs/SUPPORT_STATUS.json": "SUPPORT_STATUS.json",
-    ".gitattributes": ".gitattributes"
+    ".gitattributes": ".gitattributes",
+    "docs/user/CODEX_SANDBOX.md": "reviewed-alpha.4-sandbox-documentation"
   },
   "excluded": {
     "tests/storage/adapter-integration.test.mjs": "官方原生/开发机路径测试，不运行且不带用户路径",
@@ -498,5 +501,5 @@
     ".github/**": "替换为最小Windows离线CI",
     "其他未明确列出文件": "默认排除，不沿目录自动新增"
   },
-  "approvedDeltaFromPublicCommit": "2c98f338caff09acb16b5270497d3bd3fe6357a8"
+  "approvedDeltaFromPublicCommit": "0e2072fe77a859debd184b9d22b0eb2b86cbc4a9"
 }

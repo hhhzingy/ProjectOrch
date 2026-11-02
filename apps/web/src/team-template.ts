@@ -1,8 +1,8 @@
 /** 新项目显式选择后才使用；不改已有项目权限/预算，不在浏览器自动调用模型。 */
 export function alphaTeamPolicy(){
  const common=['identity','project.read','policy.read','role.read','task.read','task.claim','task.report_own','task.submit_own','artifact.register_own','artifact.read','question.read','question.ask','question.answer_designated','message.send','message.read_own','message.ack_own','role.startup_ack'];
- // 权限通配符按段匹配；单个*不能代表任意深度，覆盖项目内常用1至16级路径。
- const paths=Array.from({length:16},(_,i)=>Array(i+1).fill('*').join('/'));
+ // 用户创建新项目时明确授权递归子树；旧项目不自动扩大单段 * 的含义。
+ const paths=['**'];
  const profile=(id:string,actions:string[])=>({id,revision:1,actions,readPaths:paths,writePaths:paths,roleIds:[],delegableActions:[],maxDelegationDepth:0});
  return {id:'alpha-three-role',revision:1,profiles:[profile('lead',[...common,'change.apply','task.create','task.assign','task.spec.revise','task.dependencies.replace','task.accept_assigned']),profile('executor',common),profile('reviewer',[...common,'task.accept_assigned'])],limits:{totalConcurrency:1,roleConcurrency:1,maxAttempts:3,maxCorrectionTurns:2,maxManagementRounds:3,maxDynamicRoles:3,wallTimeMs:3600000,costCeiling:null,costEnforcement:'unavailable'},nativeMode:'verified_only',writeIsolation:'exclusive_workspace'};
 }

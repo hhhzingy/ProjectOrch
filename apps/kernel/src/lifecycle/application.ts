@@ -1,3 +1,4 @@
+import {bindingCodexSandbox,roleCodexSandbox} from '../native/codex-sandbox.js';
 import {safeExecutionDiagnostic} from '../native/execution-diagnostics.js';
 import {executionTimeout, rpcRequestTimeout, type ExecutionTimeoutOptions} from '../native/execution-timeout.js';
 import {interruptNativeWritesWithin} from '@projectorch/domain/workspaces';
@@ -245,7 +246,7 @@ export async function startApplication(dataDirectory: string, options: StartAppl
         return { executable: options.native!.codex!.executable, env: {...codexEnv.env,...tools.env}, configOverrides:tools.configOverrides, prepareTurn:(input:unknown)=>{
           const attemptId=(input as {attemptId?:unknown})?.attemptId;if(typeof attemptId!=='string')throw Error('ROLE_TURN_DISPATCH_REQUIRED');
           const credential=issueRoleTurnCredential(st,bindingId,attemptId,Date.now());return {env:{...codexEnv.env,PROJECTORCH_ROLE_CREDENTIAL:credential},configOverrides:codexRoleTools(bindingId).configOverrides};
-        },rpcTimeoutMs:rpcRequestTimeout(options.native?.codex?.rpcTimeoutMs),modelSelection:()=>bindingModelSelection(st,bindingId), cwd: workspaceRoot || codexEnv.cwd, leaseDirectory: options.native!.codex!.leaseDirectory, ...(options.native!.codex!.timeoutMs !== undefined ? { timeoutMs: options.native!.codex!.timeoutMs } : {}) };
+        },rpcTimeoutMs:rpcRequestTimeout(options.native?.codex?.rpcTimeoutMs),sandboxPolicy:()=>bindingCodexSandbox(st,bindingId,workspaceRoot),modelSelection:()=>bindingModelSelection(st,bindingId), cwd: workspaceRoot || codexEnv.cwd, leaseDirectory: options.native!.codex!.leaseDirectory, ...(options.native!.codex!.timeoutMs !== undefined ? { timeoutMs: options.native!.codex!.timeoutMs } : {}) };
       } : undefined);
     };
     kernelOptions.workflowPollMs = options.workflowPollMs ?? 1000;
@@ -329,7 +330,7 @@ export async function startApplication(dataDirectory: string, options: StartAppl
         const codexEnv = { env: codexEnvBase.env, cwd: codexWs };
         const codexIdentity = detectCodexIdentity(options.native.codex.executable);
         const identity = { harnessId: 'codex', version: codexIdentity.version, executableSha256: codexIdentity.executableSha256, bundleSha256: null, adapterProtocol: 'codex-app-server-jsonl-v2', route: 'official_rpc' } as const;
-        const adapter = new CodexAdapter({ rpcTimeoutMs: rpcRequestTimeout(options.native.codex.rpcTimeoutMs), executable: options.native.codex.executable, cwd: codexEnv.cwd, env: codexEnv.env, ...(options.native.codex.timeoutMs !== undefined ? { timeoutMs: options.native.codex.timeoutMs } : {}), leaseDirectory: options.native.codex.leaseDirectory, hostId: 'projectorch-local', profileId: 'kernel-codex-factory', compatibility: { registry, identity } });
+        const adapter = new CodexAdapter({ rpcTimeoutMs: rpcRequestTimeout(options.native.codex.rpcTimeoutMs), executable: options.native.codex.executable, cwd: codexEnv.cwd, env: codexEnv.env, sandboxPolicy:()=>roleCodexSandbox(rt.store,input.projectId,input.roleId,codexEnv.cwd), ...(options.native.codex.timeoutMs !== undefined ? { timeoutMs: options.native.codex.timeoutMs } : {}), leaseDirectory: options.native.codex.leaseDirectory, hostId: 'projectorch-local', profileId: 'kernel-codex-factory', compatibility: { registry, identity } });
         try {
           const charterFactory = new CodexThreadFactory({ executable: options.native.codex.executable, cwd: codexEnv.cwd, env: codexEnv.env, leaseDirectory: options.native.codex.leaseDirectory, registry, ...(options.native.codex.timeoutMs !== undefined ? { timeoutMs: options.native.codex.timeoutMs } : {}) });
           const marker = `CHARTER_OK_${input.roleId}`;
@@ -406,7 +407,7 @@ export async function startApplication(dataDirectory: string, options: StartAppl
       const codexDetected = detectCodexIdentity(options.native.codex.executable);
       const identity = { harnessId: 'codex', version: codexDetected.version, executableSha256: codexDetected.executableSha256, bundleSha256: null, adapterProtocol: 'codex-app-server-jsonl-v2', route: 'official_rpc' } as const;
       const tools = codexRoleTools(_bindingId);
-      const adapter = new CodexAdapter({ rpcTimeoutMs: rpcRequestTimeout(options.native.codex.rpcTimeoutMs), executable: options.native.codex.executable, cwd: target.workspaceRoot || codexEnv.cwd, env: {...codexEnv.env,...tools.env}, configOverrides:tools.configOverrides, ...(options.native.codex.timeoutMs !== undefined ? { timeoutMs: options.native.codex.timeoutMs } : {}), leaseDirectory: options.native.codex.leaseDirectory, hostId: tools.hostId, profileId: tools.profileId, compatibility: { registry, identity } });
+      const adapter = new CodexAdapter({ rpcTimeoutMs: rpcRequestTimeout(options.native.codex.rpcTimeoutMs), executable: options.native.codex.executable, cwd: target.workspaceRoot || codexEnv.cwd, sandboxPolicy:()=>bindingCodexSandbox(rt.store,_bindingId,target.workspaceRoot||codexEnv.cwd), env: {...codexEnv.env,...tools.env}, configOverrides:tools.configOverrides, ...(options.native.codex.timeoutMs !== undefined ? { timeoutMs: options.native.codex.timeoutMs } : {}), leaseDirectory: options.native.codex.leaseDirectory, hostId: tools.hostId, profileId: tools.profileId, compatibility: { registry, identity } });
       try {
         const { runCodexMessageTurn } = await import("../execution/codex-message-turn.js");
         const selection=bindingModelSelection(rt.store,_bindingId);

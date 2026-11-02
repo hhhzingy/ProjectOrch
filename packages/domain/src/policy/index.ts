@@ -64,7 +64,7 @@ export function isWellFormedRelativePath(value: string): boolean {
 export function isRuntimeMetadataPath(value:string):boolean{
  const segments=value.replaceAll('\\','/').toLowerCase().split('/');return segments.some(part=>['.zcode','.codex'].includes(part))||['binding-credentials.json','control-entry.json'].includes(segments.at(-1)??'');
 }
-/** 授权模板语法：在目标语法之上允许整段"*"通配；点段/反斜杠/绝对形态仍然拒绝。 */
+/** 授权模板允许整段单层 *、末尾递归 **；点段/反斜杠/绝对形态仍然拒绝。 */
 export function isWellFormedPathTemplate(value: string): boolean {
   return isPathSyntax(value, true);
 }
@@ -72,9 +72,12 @@ function isPathSyntax(value: string, allowSegmentWildcard: boolean): boolean {
   if (!value || value.length > 2048 || /[\r\n\0\\]/.test(value)) return false;
   if (value.startsWith("/") || value.includes("//")) return false;
   if (/^[a-zA-Z]:/.test(value) || value.startsWith("~")) return false;
-  for (const segment of value.split("/")) {
+  const parts = value.split("/");
+  for (const [index, segment] of parts.entries()) {
     if (!segment || segment === "." || segment === "..") return false;
     if (segment === "*" && allowSegmentWildcard) continue;
+    // 显式递归授权；不改变旧的单段 * 语义，且只能位于末尾。
+    if (segment === "**" && allowSegmentWildcard && index === parts.length - 1) continue;
     if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(segment)) return false;
     if (/[:*?"<>|]/.test(segment)) return false;
   }
@@ -101,16 +104,17 @@ export function parsePermissionProfile(input: unknown): PermissionProfile {
   return Object.freeze({ id, revision, actions, readPaths: pathList(raw.readPaths), writePaths: pathList(raw.writePaths), roleIds: nameList(raw.roleIds, 128, "roleIds"), delegableActions, maxDelegationDepth });
 }
 
-/** 段级通配（单段"*"）；目标路径必须先通过 isWellFormedRelativePath，否则一律不匹配。 */
+/** 单层 * 与显式末尾递归 **；目标路径必须合法，否则一律不匹配。 */
 export function pathMatches(patterns: readonly string[], path: string | undefined): boolean {
   if (path === undefined) return true;
   if (typeof path !== "string" || !isWellFormedRelativePath(path)) return false;
   const segments = path.split("/");
   for (const pattern of patterns) {
     const parts = pattern.split("/");
-    if (parts.length !== segments.length) continue;
+    const recursive = parts.at(-1) === '**';
+    if (recursive ? segments.length < parts.length : parts.length !== segments.length) continue;
     let matched = true;
-    for (let i = 0; i < parts.length; i++) if (parts[i] !== "*" && parts[i] !== segments[i]) { matched = false; break; }
+    for (let i = 0; i < parts.length; i++) if (parts[i] !== "**" && parts[i] !== "*" && parts[i] !== segments[i]) { matched = false; break; }
     if (matched) return true;
   }
   return false;
@@ -141,9 +145,11 @@ export function templateInside(parent: readonly string[], child: readonly string
     for (const parentPattern of parent) {
       const parentSegments = parentPattern.split("/");
       const childSegments = childPattern.split("/");
-      if (parentSegments.length !== childSegments.length) continue;
+      const recursive = parentSegments.at(-1) === '**';
+      if (recursive ? childSegments.length < parentSegments.length : parentSegments.length !== childSegments.length || childSegments.at(-1) === '**') continue;
       let ok = true;
       for (let i = 0; i < parentSegments.length; i++) {
+        if (parentSegments[i] === '**') break;
         if (parentSegments[i] === "*") continue;
         if (childSegments[i] === "*" || parentSegments[i] !== childSegments[i]) { ok = false; break; }
       }

@@ -9,8 +9,10 @@ lines.on('line', line => {
   const f = JSON.parse(line);
   if (!f.id) return;
   if (process.env.SYNTHETIC_LOG) fs.appendFileSync(process.env.SYNTHETIC_LOG, f.method + '\n');
+  if (process.env.SYNTHETIC_FRAMES) fs.appendFileSync(process.env.SYNTHETIC_FRAMES, JSON.stringify(f)+'\n');
   let result = {};
   if (f.method === 'thread/start' || f.method === 'thread/resume') result = { thread: { id: mode === 'resume-mismatch' ? 'other-thread' : f.params.threadId ?? 'synthetic-thread', turns: [], status: { type: mode === 'resume-active' ? 'active' : 'idle' } } };
+  if (f.method === 'thread/start' || f.method === 'thread/resume') Object.assign(result,{sandbox:{type:mode==='unsafe-sandbox'?'dangerFullAccess':'readOnly',networkAccess:false},approvalPolicy:'never'});
   if (f.method === 'turn/start') {
     if (mode === 'no-start-reply') return;
     const id = 'turn-' + (++turnNo);

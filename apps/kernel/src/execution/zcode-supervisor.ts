@@ -291,7 +291,7 @@ export interface SupervisorServices {
 
 /** 复核批次一：Codex官方app-server执行驱动（与ZcodeCliExecutionDriver同接口——协调器harness无关）。
  * start=resume绑定线程+真实轮；回执状态映射completed/failed/unknown，不伪造；close释放adapter连接。 */
-export interface CodexDriverConfig extends ExecutionTimeoutOptions { readonly rpcTimeoutMs?:number; readonly executable: string; readonly env: Readonly<Record<string, string>>; readonly cwd: string; readonly leaseDirectory: string; readonly timeoutMs?: number; readonly configOverrides?: readonly string[]; readonly modelSelection?:()=>NativeModelSelection|null; readonly prepareTurn?:(input:unknown)=>{readonly env:Readonly<Record<string,string>>;readonly configOverrides:readonly string[]}; }
+export interface CodexDriverConfig extends ExecutionTimeoutOptions { readonly sandboxPolicy?:()=>import("../native/codex-sandbox.js").CodexSandboxPolicy; readonly rpcTimeoutMs?:number; readonly executable: string; readonly env: Readonly<Record<string, string>>; readonly cwd: string; readonly leaseDirectory: string; readonly timeoutMs?: number; readonly configOverrides?: readonly string[]; readonly modelSelection?:()=>NativeModelSelection|null; readonly prepareTurn?:(input:unknown)=>{readonly env:Readonly<Record<string,string>>;readonly configOverrides:readonly string[]}; }
 
 export class CodexCliExecutionDriver {
   readonly supportsReadOnlyRecovery=true as const;
@@ -324,7 +324,7 @@ export class CodexCliExecutionDriver {
     if (this.#adapterPromise) return this.#adapterPromise;
     this.#adapterPromise = (async () => {
       const { CodexAdapter } = await import("../adapters/codex-adapter.js");
-      const adapter = new CodexAdapter({ executable: this.#config.executable, cwd: this.#config.cwd, env: this.#turnTools?.env??this.#config.env, ...((this.#turnTools?.configOverrides??this.#config.configOverrides) ? { configOverrides: this.#turnTools?.configOverrides??this.#config.configOverrides } : {}), ...(this.#config.timeoutMs !== undefined ? { timeoutMs: this.#config.timeoutMs } : {}), leaseDirectory: this.#config.leaseDirectory, hostId: this.session.hostId, profileId: this.session.profileId, compatibility: { registry: this.registry, identity: this.identity() }, ...(this.#config.rpcTimeoutMs !== undefined ? {rpcTimeoutMs:this.#config.rpcTimeoutMs} : {}) });
+      const adapter = new CodexAdapter({ ...(this.#config.sandboxPolicy?{sandboxPolicy:this.#config.sandboxPolicy}:{}),executable: this.#config.executable, cwd: this.#config.cwd, env: this.#turnTools?.env??this.#config.env, ...((this.#turnTools?.configOverrides??this.#config.configOverrides) ? { configOverrides: this.#turnTools?.configOverrides??this.#config.configOverrides } : {}), ...(this.#config.timeoutMs !== undefined ? { timeoutMs: this.#config.timeoutMs } : {}), leaseDirectory: this.#config.leaseDirectory, hostId: this.session.hostId, profileId: this.session.profileId, compatibility: { registry: this.registry, identity: this.identity() }, ...(this.#config.rpcTimeoutMs !== undefined ? {rpcTimeoutMs:this.#config.rpcTimeoutMs} : {}) });
       await adapter.resumeThread(this.session.nativeConversationId);
       return adapter;
     })();
@@ -335,7 +335,6 @@ export class CodexCliExecutionDriver {
     let prompt: string;
     try { prompt=taskExecutionPrompt(input); } catch { throw new NativeDispatchNotSent('INVALID_TASK_EXECUTION_INPUT'); }
     let executionId = '';
-    let enteredRunTurn=false;
     const dispatchMarker = randomUUID().slice(0,8);
     const result = Promise.resolve().then(async () => {
       // 可确定的模型解析先于取得原生owner，拒绝时不遗留闲置传输/租约。
@@ -348,7 +347,6 @@ export class CodexCliExecutionDriver {
       const adapter=await this.#adapter();
       assertCanSend();
       const marker = `DONE_${dispatchMarker}`;
-      enteredRunTurn=true;
       const turn = await adapter.runTurn(`${prompt}\n\n完成后只回复：${marker}`, marker, executionTimeout(this.#config), turnId => { executionId=turnId;this.#lastNativeTurn=turnId; started(this.session,turnId); },assertCanSend,selection);
       // 原生终态足以安全关闭本轮空闲传输；业务完成标记缺失仍保留unknown，交给只读恢复核实。
       if(this.#config.prepareTurn&&['completed','failed','interrupted'].includes(turn.status)){await adapter.close();this.#adapterPromise=null;this.#turnTools=null;}
@@ -356,7 +354,7 @@ export class CodexCliExecutionDriver {
       if (turn.status === "failed") return { session: this.session, executionId, status: "failed" as const, terminalConfirmed: true, ...(turn.diagnostics?{diagnostics:safeExecutionDiagnostic(turn.diagnostics)}:{}) };
       if (turn.status === "interrupted") return { session: this.session, executionId, status: "interrupted" as const, terminalConfirmed: true };
       return { session: this.session, executionId, status: "unknown" as const, terminalConfirmed: false, ...(turn.diagnostics?{diagnostics:turn.diagnostics}:{}) };
-    }).catch(error => {if(error instanceof NativeDispatchNotSent)throw error;if(!enteredRunTurn&&error instanceof NativeRpcError&&error.delivery==='not_sent')throw new NativeDispatchNotSent('MODEL_SELECTION_UNAVAILABLE');return { session: this.session, executionId, status: "unknown" as const, terminalConfirmed: false };});
+    }).catch(async error => {if(error instanceof NativeDispatchNotSent)throw error;if(error instanceof NativeRpcError&&error.delivery==='not_sent'){const adapter=await this.#adapterPromise?.catch(()=>null);await adapter?.close();this.#adapterPromise=null;this.#turnTools=null;throw new NativeDispatchNotSent(error.code);}return { session: this.session, executionId, status: "unknown" as const, terminalConfirmed: false };});
     return { result };
   }
   async close(): Promise<void> { this.#closed = true; try { const a = await this.#adapterPromise; await a?.close(); } catch { /* 尽力 */ } }
